@@ -5,14 +5,19 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, EyeOff, Mail, Lock, User, Phone, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { auth , googleProvider, facebookProvider  } from "@/firebaseConfig"; // adjust path if different
 import { useNavigate } from "react-router-dom"; // optional: redirect after signup
 import axios from "axios";
 import { signInWithPopup } from "firebase/auth";
+import { signIn, useSession } from "next-auth/react";
+import { useUser } from "@/contexts/UserContext";
 
 
 const Signup = () => {
+
+    const { login } = useUser();
+    
   const BASE_URL = import.meta.env.VITE_API_BASE_URL;
   if (!BASE_URL) {
   console.warn("⚠️ BASE_URL is not defined! Check your .env file.");
@@ -71,6 +76,93 @@ const navigate = useNavigate();
 
  // Make sure axios is installed
 
+// const handleSubmit = async (e: React.FormEvent) => {
+//   e.preventDefault();
+
+//   if (formData.password !== formData.confirmPassword) {
+//     alert("Passwords don't match!");
+//     return;
+//   }
+
+//   try {
+//     // 1. Create Firebase user
+//     const userCredential = await createUserWithEmailAndPassword(
+//       auth,
+//       formData.email,
+//       formData.password
+//     );
+
+//     const firebaseUser = userCredential.user;
+//     console.log("✅ Firebase user created:", firebaseUser);
+
+//     // 2. Add user to MongoDB (/api/users)
+//     const userPayload = {
+//       name: `${formData.firstName} ${formData.lastName}`,
+//       email: formData.email,
+//       phone: formData.phone,
+//       role: "student",
+//     };
+
+//     const userResponse = await axios.post(`${BASE_URL}/api/users`, userPayload);
+//     const mongoUserId = userResponse.data._id; // Ensure backend returns _id
+
+//     console.log("✅ User saved in MongoDB with _id:", mongoUserId);
+
+//     // 3. Add student data to MongoDB (/api/students)
+//     const studentPayload = {
+//       userId: mongoUserId,
+//       interests: ["Mathematics", "Science"],
+//       enrolledSessions: [],
+//       attendedSessions: [],
+//       profilePic: "https://example.com/profilepic.jpg",
+//       educationLevel: "Undergraduate",
+//       goal: "Become a Data Scientist",
+//       payments: [],
+//       totalSpent: 1500,
+//     };
+
+//     await axios.post(`${BASE_URL}/api/students`, studentPayload);
+//     console.log("✅ Student profile created");
+
+//     // 4. Redirect to login
+//     // navigate("/login");
+
+   
+//         // Firebase login
+//         const userCredential1 = await signInWithEmailAndPassword(
+//           auth,
+//           formData.email,
+//           formData.password
+//         );
+//         const user = userCredential1.user;
+    
+//         const baseURL = `${import.meta.env.VITE_API_BASE_URL}/api`;
+//         const endpoint = 
+//            `${baseURL}/students/${encodeURIComponent(user.email || "")}`;
+    
+//         const response = await fetch(endpoint);
+//         if (!response.ok) {
+//           throw new Error("User record not found in DB");
+//         }
+    
+//         const fullUserData = await response.json();
+//         console.log("Full user data:", fullUserData);
+//         // Save user in context
+//         login({
+//           name: fullUserData.userId?.name || fullUserData.name || user.email?.split("@")[0],
+//           email: fullUserData.userId?.email || fullUserData.email || "",
+//           role:  "Student",
+//           id: fullUserData._id // MongoDB ID
+//         });
+    
+//         navigate("/"); 
+//   } catch (error: any) {
+//     console.error("❌ Signup error:", error);
+//     alert("Signup failed: " + error.message);
+//   }
+// };
+
+
 const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
 
@@ -80,47 +172,59 @@ const handleSubmit = async (e: React.FormEvent) => {
   }
 
   try {
-    // 1. Create Firebase user
+    // 1. Firebase Auth
     const userCredential = await createUserWithEmailAndPassword(
       auth,
       formData.email,
       formData.password
     );
-
     const firebaseUser = userCredential.user;
     console.log("✅ Firebase user created:", firebaseUser);
 
-    // 2. Add user to MongoDB (/api/users)
+    // 2. Add user to /api/users
     const userPayload = {
       name: `${formData.firstName} ${formData.lastName}`,
       email: formData.email,
       phone: formData.phone,
       role: "student",
     };
-
     const userResponse = await axios.post(`${BASE_URL}/api/users`, userPayload);
-    const mongoUserId = userResponse.data._id; // Ensure backend returns _id
-
+    const mongoUserId = userResponse.data._id;
     console.log("✅ User saved in MongoDB with _id:", mongoUserId);
 
-    // 3. Add student data to MongoDB (/api/students)
+    // 3. Add student to /api/students
     const studentPayload = {
       userId: mongoUserId,
-      interests: ["Mathematics", "Science"],
+      interests: [],
       enrolledSessions: [],
       attendedSessions: [],
       profilePic: "https://example.com/profilepic.jpg",
-      educationLevel: "Undergraduate",
-      goal: "Become a Data Scientist",
+      educationLevel: "",
+      goal: "",
       payments: [],
-      totalSpent: 1500,
+      totalSpent: 0,
     };
-
     await axios.post(`${BASE_URL}/api/students`, studentPayload);
     console.log("✅ Student profile created");
 
-    // 4. Redirect to login
-    navigate("/login");
+    // 4. Get full user data from MongoDB
+    const endpoint = `${BASE_URL}/api/students/${encodeURIComponent(firebaseUser.email || "")}`;
+    const response = await fetch(endpoint);
+    if (!response.ok) throw new Error("User record not found in DB");
+
+    const fullUserData = await response.json();
+    console.log("Full user data:", fullUserData);
+
+    // 5. Login in Context
+    login({
+      name: fullUserData.userId?.name || fullUserData.name || firebaseUser.email?.split("@")[0],
+      email: fullUserData.userId?.email || fullUserData.email || "",
+      role: "Student",
+      id: fullUserData._id,
+    });
+
+    // 6. Redirect
+    navigate("/");
   } catch (error: any) {
     console.error("❌ Signup error:", error);
     alert("Signup failed: " + error.message);
@@ -138,24 +242,123 @@ const handleSubmit = async (e: React.FormEvent) => {
 
 
    const handleGoogleSignIn = async () => {
-    try {
-      const result = await signInWithPopup(auth, googleProvider);
-      console.log("Google user:", result.user);
-      // Send user info to backend if needed
-    } catch (error) {
-      console.error("Google sign-in error:", error);
-    }
-  };
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    const user = result.user;
+    console.log("✅ Google user:", user);
 
-  const handleFacebookSignIn = async () => {
-    try {
-      const result = await signInWithPopup(auth, facebookProvider);
-      console.log("Facebook user:", result.user);
-      // Send user info to backend if needed
-    } catch (error) {
-      console.error("Facebook sign-in error:", error);
-    }
-  };
+    // 1. Create user
+    const userPayload = {
+      name: user.displayName || "Unknown User",
+      email: user.email || "",
+      phone: user.phoneNumber || "",
+      role: "student",
+    };
+
+    const userRes = await axios.post(`${BASE_URL}/api/users`, userPayload);
+    const mongoUserId = userRes.data._id;
+    console.log("✅ MongoDB User ID:", mongoUserId);
+
+    // 2. Create student with cleaned payload
+    const studentPayload = {
+      userId: mongoUserId,
+      interests: [],
+      enrolledSessions: [],
+      attendedSessions: [],
+      profilePic: user.photoURL || "",
+      educationLevel: "",
+      goal: "",
+      payments: [],
+      totalSpent: 0,
+    };
+
+    await axios.post(`${BASE_URL}/api/students`, studentPayload);
+    console.log("✅ Student profile created");
+
+    // 3. Retrieve student full data
+    const baseURL = `${import.meta.env.VITE_API_BASE_URL}/api`;
+    const endpoint = `${baseURL}/students/${encodeURIComponent(user.email || "")}`;
+    const response = await fetch(endpoint);
+
+    if (!response.ok) throw new Error("User record not found in DB");
+
+    const fullUserData = await response.json();
+
+    // 4. Set login context
+    login({
+      name: fullUserData.userId?.name || user.displayName || "",
+      email: fullUserData.userId?.email || user.email || "",
+      role: "Student",
+      id: fullUserData._id,
+    });
+
+    navigate("/");
+
+  } catch (error: any) {
+    console.error("❌ Google sign-in error:", error);
+    alert("Google Sign-in failed: " + error.message);
+  }
+};
+
+const handleFacebookSignIn = async () => {
+  try {
+    const result = await signInWithPopup(auth, facebookProvider);
+    const user = result.user;
+    console.log("✅ Facebook user:", user);
+
+    // 1. Create user
+    const userPayload = {
+      name: user.displayName || "Unknown User",
+      email: user.email || "",
+      phone: user.phoneNumber || "",
+      role: "student",
+    };
+
+    const userRes = await axios.post(`${BASE_URL}/api/users`, userPayload);
+    const mongoUserId = userRes.data._id;
+    console.log("✅ MongoDB User ID:", mongoUserId);
+
+    // 2. Create student with cleaned payload
+    const studentPayload = {
+      userId: mongoUserId,
+      interests: [],
+      enrolledSessions: [],
+      attendedSessions: [],
+      profilePic: user.photoURL || "",
+      educationLevel: "",
+      goal: "",
+      payments: [],
+      totalSpent: 0,
+    };
+
+    await axios.post(`${BASE_URL}/api/students`, studentPayload);
+    console.log("✅ Student profile created");
+
+    // 3. Retrieve student full data
+    const baseURL = `${import.meta.env.VITE_API_BASE_URL}/api`;
+    const endpoint = `${baseURL}/students/${encodeURIComponent(user.email || "")}`;
+    const response = await fetch(endpoint);
+
+    if (!response.ok) throw new Error("User record not found in DB");
+
+    const fullUserData = await response.json();
+
+    // 4. Set login context
+    login({
+      name: fullUserData.userId?.name || user.displayName || "",
+      email: fullUserData.userId?.email || user.email || "",
+      role: "Student",
+      id: fullUserData._id,
+    });
+
+    navigate("/");
+
+  } catch (error: any) {
+    console.error("❌ Facebook sign-in error:", error);
+    alert("Facebook Sign-in failed: " + error.message);
+  }
+};
+
 
 
 
