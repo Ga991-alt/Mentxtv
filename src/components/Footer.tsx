@@ -6,6 +6,7 @@ const Footer = () => {
 
   const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
   const [socials, setSocials] = useState({
+    facebook: "#",
     instagram: "#",
     twitter: "#",
     youtube: "#",
