@@ -60,6 +60,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Users, DollarSign, RadioIcon } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
+import axios from "axios";
 
 const StudentStats = () => {
   const { user: Userdata } = useUser();
@@ -68,8 +69,8 @@ const StudentStats = () => {
   useEffect(() => {
     const fetchStudentInfo = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/students/${Userdata.email}`);
-        const data = await res.json();
+        const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/students/${Userdata.email}`)
+        const data = await res.data();
         setStudentData(data);
       } catch (err) {
         console.error("Failed to fetch student data:", err);
