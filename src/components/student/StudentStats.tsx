@@ -70,8 +70,9 @@ const StudentStats = () => {
     const fetchStudentInfo = async () => {
       try {
         const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/students/${Userdata.email}`)
-        const data = await res.data();
+        const data = await res.data;
         setStudentData(data);
+        console.log(data);
       } catch (err) {
         console.error("Failed to fetch student data:", err);
       }

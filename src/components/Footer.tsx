@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 const Footer = () => {
 
-  const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const [socials, setSocials] = useState({
     facebook: "#",
     instagram: "#",
