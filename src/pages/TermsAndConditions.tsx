@@ -2,14 +2,27 @@
 import { useEffect, useState } from "react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import axios from "axios";
 
 const TermsAndConditions = () => {
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const [content, setContent] = useState("");
 
   useEffect(() => {
-    // Load content from localStorage (in a real app, this would come from an API)
-    const savedContent = localStorage.getItem('termsAndConditions');
-    setContent(savedContent || "Terms and Conditions have not been set by the administrator yet.");
+    const fetchContent = async () => {
+      try {
+        const res = await axios.get(`${BASE_URL}/api/Terms`);
+        const about = res.data;
+
+        // If the response is an object with "content" field
+        setContent(about?.content || "About Us content has not been set by the administrator yet.");
+      } catch (error) {
+        console.error("Failed to load About Us:", error);
+        setContent("About Us content has not been set by the administrator yet.");
+      }
+    };
+
+    fetchContent();
   }, []);
 
   return (

@@ -1,6 +1,28 @@
+import axios from "axios";
 import { Facebook, Twitter, Youtube, Instagram, Linkedin } from "lucide-react";
+import { useEffect, useState } from "react";
 
 const Footer = () => {
+
+  const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+  const [socials, setSocials] = useState({
+    instagram: "#",
+    twitter: "#",
+    youtube: "#",
+    linkedin: "#",
+  });
+
+  useEffect(() => {
+    const fetchSocials = async () => {
+      try {
+        const res = await axios.get(`${BASE_URL}/api/social`);
+        setSocials(res.data || {});
+      } catch (error) {
+        console.error("Failed to fetch social links", error);
+      }
+    };
+    fetchSocials();
+  }, [BASE_URL]);
   return (
     <footer className="bg-gray-900 text-white py-16 px-4">
       <div className="max-w-7xl mx-auto">
@@ -46,11 +68,11 @@ const Footer = () => {
           <div>
             <h3 className="text-xl font-bold mb-6">Company</h3>
             <div className="space-y-3">
-              <a href="#" className="block text-gray-300 hover:text-blue-400 transition-colors">About Us</a>
+              <a href="/about" className="block text-gray-300 hover:text-blue-400 transition-colors">About Us</a>
               <a href="/blogs" className="block text-gray-300 hover:text-blue-400 transition-colors">Blogs</a>
-              <a href="#" className="block text-gray-300 hover:text-blue-400 transition-colors">FAQs</a>
-              <a href="#" className="block text-gray-300 hover:text-blue-400 transition-colors">Terms and Conditions</a>
-              <a href="#" className="block text-gray-300 hover:text-blue-400 transition-colors">Privacy Policy</a>
+              {/* <a href="#" className="block text-gray-300 hover:text-blue-400 transition-colors">FAQs</a> */}
+              <a href="/Terms" className="block text-gray-300 hover:text-blue-400 transition-colors">Terms and Conditions</a>
+              <a href="/privacy" className="block text-gray-300 hover:text-blue-400 transition-colors">Privacy Policy</a>
             </div>
           </div>
         </div>
@@ -60,7 +82,7 @@ const Footer = () => {
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="mb-6 md:mb-0">
               <h4 className="text-lg font-semibold mb-4">Follow Us :</h4>
-              <div className="flex space-x-4">
+              {/* <div className="flex space-x-4">
                 <a href="#" className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors">
                   <Facebook size={20} />
                 </a>
@@ -74,6 +96,23 @@ const Footer = () => {
                   <Instagram size={20} />
                 </a>
                 <a href="#" className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors">
+                  <Linkedin size={20} />
+                </a>
+              </div> */}
+              <div className="flex space-x-4">
+                <a href={"#"} target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors">
+                  <Facebook size={20} />
+                </a>
+                <a href={socials.twitter || "#"} target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors">
+                  <Twitter size={20} />
+                </a>
+                <a href={socials.youtube || "#"} target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors">
+                  <Youtube size={20} />
+                </a>
+                <a href={socials.instagram || "#"} target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors">
+                  <Instagram size={20} />
+                </a>
+                <a href={"#"} target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors">
                   <Linkedin size={20} />
                 </a>
               </div>
