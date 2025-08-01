@@ -29,6 +29,8 @@ import NotFound from "./pages/NotFound";
 import LiveSession from "./pages/LiveSession";
 import MentorLiveSession from "./pages/MentorLiveSession.tsx";
 import FeedbackForm from "./pages/feedback.tsx";
+import ForgotPassword from "./pages/ForgotPage.tsx";
+import ResetPassword from "./pages/ResetPassword.tsx";
 // import MentorLiveSession from "./pages/MentorLiveSession.tsx";
 
 const queryClient = new QueryClient();
@@ -57,6 +59,7 @@ const App = () => (
               path="/session-details/:sessionId"
               element={<SessionDetails />}
             />
+            <Route path="/forgot-password" element={<ForgotPassword/>} />
             <Route path="/about" element={<AboutUs />} />
             <Route path="/faq" element={<FAQ />} />
             <Route path="/terms" element={<TermsAndConditions />} />
@@ -66,7 +69,7 @@ const App = () => (
             <Route path="/view-mentor/:email" element={<ViewMentor />} />
             <Route path="/view-student/:email" element={<ViewStudent />} />
             <Route path="/feedback/:sessionid" element={<FeedbackForm />} />
-
+            <Route path="/reset-password" element={<ResetPassword />} />
 
             <Route
               path="/post-session"
