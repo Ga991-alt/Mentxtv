@@ -169,8 +169,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { RadioIcon, Video } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
+// import { useRouter } from 'next/router';
+import { useNavigate } from "react-router-dom";
+
 
 const StudentSessions = () => {
+  // const router = useRouter();
+  const navigate = useNavigate();
   const { user } = useUser();
   const [sessions, setSessions] = useState([]);
   const [liveSessions, setLiveSessions] = useState([]);
@@ -264,8 +269,10 @@ const handleJoinLiveSession = async (sessionId: string) => {
     });
 
     // 7. Redirect to Jitsi Meet
-    const jitsiRoomUrl = `https://meet.jit.si/${sessionId}`;
-    window.open(jitsiRoomUrl, '_blank');
+    // const jitsiRoomUrl = `https://meet.jit.si/${sessionId}`;
+    // window.open(jitsiRoomUrl, '_blank');
+    navigate(`/live-session/${sessionId}`);
+    
   } catch (error) {
     console.error('Failed to update student/session or join:', error);
   }
