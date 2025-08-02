@@ -374,6 +374,8 @@ const SocialMediaSettings = () => {
     linkedin: "",
   });
 
+  console.log(links)
+
   useEffect(() => {
     const fetchSocialLinks = async () => {
       try {

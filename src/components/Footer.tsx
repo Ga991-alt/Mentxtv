@@ -101,7 +101,7 @@ const Footer = () => {
                 </a>
               </div> */}
               <div className="flex space-x-4">
-                <a href={"#"} target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors">
+                <a href={socials.facebook ||"#"} target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors">
                   <Facebook size={20} />
                 </a>
                 <a href={socials.twitter || "#"} target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors">
@@ -113,7 +113,7 @@ const Footer = () => {
                 <a href={socials.instagram || "#"} target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors">
                   <Instagram size={20} />
                 </a>
-                <a href={"#"} target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors">
+                <a href={ socials.linkedin || "#"} target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors">
                   <Linkedin size={20} />
                 </a>
               </div>

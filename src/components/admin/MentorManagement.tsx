@@ -77,31 +77,6 @@ const MentorManagement = ({ mentors }: MentorManagementProps) => {
     }
   };
 
-  // const handleEditMentor = async (email: string) => {
-  //   try {
-  //     const res = await axios.get(`${baseURL}/api/mentors/${email}`);
-  //     const data = res.data;
-
-  //     setFormData({
-  //       userEmail: data.userId.email,
-  //       bio: data.bio,
-  //       education: data.education,
-  //       domain: data.domain,
-  //       expertise: data.expertise || [],
-  //       subjects: data.subjects || [],
-  //       name: data.userId.name,
-  // phone: data.userId.phone,
-  //     });
-
-  //     setSelectedMentorId(data._id);
-  //     setIsEditing(true);
-  //     setEditDialogOpen(true);
-  //   } catch (err) {
-  //     console.error("Failed to fetch mentor details", err);
-  //   }
-  // };
-
-
   const handleEditMentor = async (email: string) => {
   try {
     const res = await axios.get(`${baseURL}/api/mentors/${email}`);
@@ -125,97 +100,6 @@ const MentorManagement = ({ mentors }: MentorManagementProps) => {
     console.error("Failed to fetch mentor details", err);
   }
 };
-
-  // const handleSubmit = async () => {
-  //   try {
-  //     const userRes = await axios.get(`${baseURL}/api/users/${formData.userEmail}`);
-  //     const userId = userRes.data?._id;
-  //     if (!userId) return;
-
-  //     const payload = { ...formData, userId };
-  //     delete payload.userEmail;
-
-  //     if (isEditing && selectedMentorId) {
-  //       await axios.put(`${baseURL}/api/mentors/${selectedMentorId}`, payload);
-  //       setEditDialogOpen(false);
-  //     } else {
-  //       await axios.post(`${baseURL}/api/mentors`, payload);
-  //       setOpen(false);
-  //     }
-
-  //     setFormData({
-  //       userEmail: "",
-  //       bio: "",
-  //       subjects: [],
-  //       education: "",
-  //       expertise: [],
-  //       domain: "",
-  //       name: "",
-  // phone: "",
-  //     });
-
-  //     setIsEditing(false);
-  //   } catch (err) {
-  //     console.error("Failed to submit mentor data", err);
-  //   }
-  // };
-
-//   const handleSubmit = async () => {
-//   try {
-//     let userId = null;
-
-//     try {
-//       const userRes = await axios.get(`${baseURL}/api/users/${formData.userEmail}`);
-//       userId = userRes.data?._id;
-//     } catch (fetchErr) {
-//       if (fetchErr.response?.status === 404) {
-//         // User not found — create new user
-//         const newUserPayload = {
-//           name: formData.name,
-//           email: formData.userEmail,
-//           phone: formData.phone,
-//           role: "mentor",
-//         };
-
-//         const createUserRes = await axios.post(`${baseURL}/api/users`, newUserPayload);
-//         userId = createUserRes.data._id;
-//       } else {
-//         throw fetchErr;
-//       }
-//     }
-
-//     if (!userId) return;
-
-//     const payload = { ...formData, userId };
-//     delete payload.userEmail;
-//     delete payload.name;
-//     delete payload.phone;
-
-//     if (isEditing && selectedMentorId) {
-//       await axios.put(`${baseURL}/api/mentors/${selectedMentorId}`, payload);
-//       setEditDialogOpen(false);
-//     } else {
-//       await axios.post(`${baseURL}/api/mentors`, payload);
-//       setOpen(false);
-//     }
-
-//     setFormData({
-//       userEmail: "",
-//       name: "",
-//       phone: "",
-//       bio: "",
-//       subjects: [],
-//       education: "",
-//       expertise: [],
-//       domain: "",
-//     });
-
-//     setIsEditing(false);
-//   } catch (err) {
-//     console.error("Failed to submit mentor data", err);
-//   }
-// };
-
 
 
 const handleSubmit = async () => {
