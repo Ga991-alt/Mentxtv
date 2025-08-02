@@ -69,7 +69,7 @@ const StudentJourney = () => {
             <Link to="/blogs">
               <Button 
                 size="lg"
-                className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-4 rounded-full text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                className="bg-blue-500 mt-8 hover:bg-blue-600 text-white px-8 py-4 rounded-full text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
               >
                 Start Your Journey Now!
               </Button>

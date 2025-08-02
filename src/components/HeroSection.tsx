@@ -25,7 +25,7 @@ const HeroSection = () => {
             <Link to="/booking-sessions">
               <Button 
                 size="lg"
-                className="bg-gray-900 hover:bg-gray-800 text-white px-8 py-4 rounded-full text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                className="bg-gray-900 mt-5 hover:bg-gray-800 text-white px-8 py-4 rounded-full text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
               >
                 Grab The Guidance
               </Button>
