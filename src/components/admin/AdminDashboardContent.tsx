@@ -168,8 +168,8 @@ useEffect(() => {
       // Process Students
       const processedStudents: Student[] = studentsRaw.map((s: any) => ({
         id: s._id,
-        name: s.userId.name,
-        email: s.userId.email,
+        name: s.userId?.name,
+        email: s.userId?.email,
         domain: s.domain || "General",
         sessionsAttended: s.attendedSessions?.length || 0,
         performance: s.performance || 0,
