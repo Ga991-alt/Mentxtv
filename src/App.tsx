@@ -31,6 +31,7 @@ import MentorLiveSession from "./pages/MentorLiveSession";
 import FeedbackForm from "./pages/feedback.tsx";
 import ForgotPassword from "./pages/ForgotPage.tsx";
 import ResetPassword from "./pages/ResetPassword.tsx";
+import PaymentDetail from "./components/admin/PaymentDetails.tsx";
 // import MentorLiveSession from "./pages/MentorLiveSession.tsx";
 
 const queryClient = new QueryClient();
@@ -44,6 +45,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/admin/payments/:id" element={<PaymentDetail />} />
             <Route path="/exam-details" element={<ExamDetails />} />
             <Route path="/become-mentor" element={<BecomeMentor />} />
             <Route path="/test-portal" element={<TestPortal />} />

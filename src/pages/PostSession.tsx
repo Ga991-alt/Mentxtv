@@ -18,15 +18,12 @@ const PostSession = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const { user } = useUser(); // Must include _id of mentor
+  const { user } = useUser();
 
-
-
-  
   const [sessionData, setSessionData] = useState({
     title: "",
     description: "",
-    mentorName: user?.name || "", // Default to user's name
+    mentorName: user?.name || "",
     subject: "",
     date: "",
     time: "",
@@ -36,7 +33,80 @@ const PostSession = () => {
     type: "group" as "group" | "onetoone"
   });
 
-  const [previewMode, setPreviewMode] = useState(false);
+  const handleInputChange = (field: string, value: string) => {
+    setSessionData(prev => ({
+      ...prev,
+      [field]: value,
+      // Automatically set slots to 1 when switching to one-to-one
+      ...(field === 'type' && value === 'onetoone' ? { totalSlots: "1" } : {})
+    }));
+  };
+
+  const handleSubmit = async () => {
+    const requiredFields = ["title", "subject", "date", "time", "price"];
+    // Only require totalSlots for group sessions
+    if (sessionData.type === "group") {
+      requiredFields.push("totalSlots");
+    }
+
+    const missingFields = requiredFields.filter((field) => !sessionData[field]);
+
+    if (missingFields.length > 0 || !user?.id) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const payload = {
+        mentorId: user.id,
+        mentorName: user.name,
+        title: sessionData.title,
+        subject: sessionData.subject,
+        date: sessionData.date,
+        time: sessionData.time,
+        seats: parseInt(sessionData.totalSlots),
+        description: sessionData.description,
+        duration: sessionData.duration,
+        price: parseInt(sessionData.price),
+        type: sessionData.type,
+      };
+
+      const sessionRes = await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/api/sessions`,
+        payload
+      );
+
+      const newSessionId = sessionRes.data._id;
+
+      const mentorRes = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/api/mentors/${user.email}`
+      );
+      const mentorId = mentorRes.data._id;
+      
+      await axios.put(`${import.meta.env.VITE_API_BASE_URL}/api/mentors/${mentorId}`, {
+        $push: { sessions: newSessionId },
+        updatedAt: new Date(),
+      });
+
+      toast({
+        title: "Session Posted Successfully!",
+        description: "Your session has been posted and mentor profile updated.",
+      });
+
+      navigate("/mentor-dashboard");
+    } catch (error) {
+      console.error("Failed to post session or update mentor:", error);
+      toast({
+        title: "Submission Failed",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const subjects = [
     "Physics", "Chemistry", "Mathematics", "Biology", 
@@ -47,116 +117,10 @@ const PostSession = () => {
   const timeSlots = [
     "9:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", 
     "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", 
-    "5:00 PM", "6:00 PM", "7:00 PM", "8:00 PM"
+    "5:00 PM", "6:00 PM", "7:00 PM", "8:00 PM","9:00 PM","10:00 PM"
   ];
 
   const durations = ["30 minutes", "1 hour", "1.5 hours", "2 hours", "2.5 hours", "3 hours"];
-
-  const handleInputChange = (field: string, value: string) => {
-    setSessionData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
-  // const handleSubmit = () => {
-  //   // Validate form
-  //   const requiredFields = ["title", "mentorName", "subject", "date", "time", "duration", "totalSlots", "price"];
-  //   const missingFields = requiredFields.filter(field => !sessionData[field]);
-    
-  //   if (missingFields.length > 0) {
-  //     toast({
-  //       title: "Missing Information",
-  //       description: "Please fill in all required fields.",
-  //       variant: "destructive"
-  //     });
-  //     return;
-  //   }
-
-  //   // Save session (in real app, this would be an API call)
-  //   const newSession = {
-  //     id: `S${Date.now()}`,
-  //     ...sessionData,
-  //     availableSlots: parseInt(sessionData.totalSlots),
-  //     rating: 0,
-  //     subjects: [sessionData.subject],
-  //     price: parseInt(sessionData.price)
-  //   };
-
-  //   // Save to localStorage for demo
-  //   const existingSessions = JSON.parse(localStorage.getItem('postedSessions') || '[]');
-  //   existingSessions.push(newSession);
-  //   localStorage.setItem('postedSessions', JSON.stringify(existingSessions));
-
-  //   toast({
-  //     title: "Session Posted Successfully!",
-  //     description: "Your session has been posted and is now available for booking.",
-  //   });
-
-  //   navigate('/mentor-dashboard');
-  // };
-
-  const handleSubmit = async () => {
-  const requiredFields = ["title", "subject", "date", "time", "totalSlots"];
-  const missingFields = requiredFields.filter((field) => !sessionData[field]);
-
-  if (missingFields.length > 0 || !user?.id) {
-    toast({
-      title: "Missing Information",
-      description: "Please fill in all required fields.",
-      variant: "destructive",
-    });
-    return;
-  }
-
-  try {
-    // 1. Post the session
-    const payload = {
-      mentorId: user.id,
-      mentorName: user.name,
-      title: sessionData.title,
-      subject: sessionData.subject,
-      date: sessionData.date,
-      time: sessionData.time,
-      seats: parseInt(sessionData.totalSlots),
-      description: sessionData.description,
-      duration: sessionData.duration,
-      price: parseInt(sessionData.price),
-      type: sessionData.type,
-    };
-
-    const sessionRes = await axios.post(
-      `${import.meta.env.VITE_API_BASE_URL}/api/sessions`,
-      payload
-    );
-
-    const newSessionId = sessionRes.data._id;
-
-const mentorRes = await axios.get(
-  `${import.meta.env.VITE_API_BASE_URL}/api/mentors/${user.email}`
-);
-const mentorId = mentorRes.data._id;
-    // 2. Update mentor's session array with new session ID
-    await axios.put(`${import.meta.env.VITE_API_BASE_URL}/api/mentors/${mentorId}`, {
-      $push: { sessions: newSessionId }, // Note: backend should handle this correctly
-      updatedAt: new Date(),
-    });
-
-    toast({
-      title: "Session Posted Successfully!",
-      description: "Your session has been posted and mentor profile updated.",
-    });
-
-    navigate("/mentor-dashboard");
-  } catch (error) {
-    console.error("Failed to post session or update mentor:", error);
-    toast({
-      title: "Submission Failed",
-      description: "Please try again later.",
-      variant: "destructive",
-    });
-  }
-};
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -203,16 +167,6 @@ const mentorId = mentorRes.data._id;
                   rows={3}
                 />
               </div>
-
-              {/* <div>
-                <Label htmlFor="mentorName">Mentor Name *</Label>
-                <Input
-                  id="mentorName"
-                  value={sessionData.mentorName}
-                  onChange={(e) => handleInputChange('mentorName', e.target.value)}
-                  placeholder="e.g., Dr. Priya Sharma"
-                />
-              </div> */}
 
               <div>
                 <Label htmlFor="subject">Subject *</Label>
@@ -284,34 +238,66 @@ const mentorId = mentorRes.data._id;
 
               <div>
                 <Label htmlFor="type">Session Type</Label>
-                <Select 
-                  value={sessionData.type} 
-                  onValueChange={(value) => handleInputChange('type', value as "group" | "onetoone")}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="group">Group Session</SelectItem>
-                    <SelectItem value="onetoone">One-to-One</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="flex gap-4 mt-2">
+                  <div 
+                    className={`flex-1 border rounded-md p-4 cursor-pointer ${sessionData.type === "group" ? "border-blue-500 bg-blue-50" : "border-gray-200"}`}
+                    onClick={() => handleInputChange('type', 'group')}
+                  >
+                    <div className="flex items-center gap-2">
+                      {sessionData.type === "group" && (
+                        <span className="h-4 w-4 rounded-full bg-blue-500 flex items-center justify-center">
+                          <span className="h-2 w-2 rounded-full bg-white"></span>
+                        </span>
+                      )}
+                      {sessionData.type !== "group" && (
+                        <span className="h-4 w-4 rounded-full border border-gray-300"></span>
+                      )}
+                      <span>Group Session</span>
+                    </div>
+                  </div>
+                  <div 
+                    className={`flex-1 border rounded-md p-4 cursor-pointer ${sessionData.type === "onetoone" ? "border-blue-500 bg-blue-50" : "border-gray-200"}`}
+                    onClick={() => handleInputChange('type', 'onetoone')}
+                  >
+                    <div className="flex items-center gap-2">
+                      {sessionData.type === "onetoone" && (
+                        <span className="h-4 w-4 rounded-full bg-blue-500 flex items-center justify-center">
+                          <span className="h-2 w-2 rounded-full bg-white"></span>
+                        </span>
+                      )}
+                      {sessionData.type !== "onetoone" && (
+                        <span className="h-4 w-4 rounded-full border border-gray-300"></span>
+                      )}
+                      <span>One-to-One</span>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="totalSlots">Total Slots *</Label>
-                  <Input
-                    id="totalSlots"
-                    type="number"
-                    value={sessionData.totalSlots}
-                    onChange={(e) => handleInputChange('totalSlots', e.target.value)}
-                    placeholder="e.g., 15"
-                    min="1"
-                    max={sessionData.type === "onetoone" ? "1" : "50"}
-                  />
-                </div>
-                <div>
+                {sessionData.type === "group" ? (
+                  <div>
+                    <Label htmlFor="totalSlots">Total Slots *</Label>
+                    <Input
+                      id="totalSlots"
+                      type="number"
+                      value={sessionData.totalSlots}
+                      onChange={(e) => handleInputChange('totalSlots', e.target.value)}
+                      placeholder="e.g., 15"
+                      min="1"
+                      max="50"
+                    />
+                  </div>
+                ) : (
+                  <div className="hidden">
+                    <Input
+                      id="totalSlots"
+                      type="hidden"
+                      value="1"
+                    />
+                  </div>
+                )}
+                <div className={sessionData.type === "onetoone" ? "col-span-2" : ""}>
                   <Label htmlFor="price">Price (₹) *</Label>
                   <Input
                     id="price"
@@ -325,13 +311,6 @@ const mentorId = mentorRes.data._id;
               </div>
 
               <div className="flex gap-4">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setPreviewMode(!previewMode)}
-                  className="flex-1"
-                >
-                  {previewMode ? "Edit" : "Preview"}
-                </Button>
                 <Button 
                   onClick={handleSubmit}
                   className="flex-1 bg-blue-600 hover:bg-blue-700"
@@ -375,10 +354,12 @@ const mentorId = mentorRes.data._id;
                       <Clock size={14} />
                       <span>{sessionData.time || "Time"} • {sessionData.duration || "Duration"}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <Users size={14} />
-                      <span>{sessionData.totalSlots || "0"} available</span>
-                    </div>
+                    {sessionData.type === "group" && (
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Users size={14} />
+                        <span>{sessionData.totalSlots || "0"} available</span>
+                      </div>
+                    )}
                   </div>
                   
                   {sessionData.subject && (

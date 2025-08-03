@@ -27,9 +27,10 @@ const PaymentManagement = ({ payments }: PaymentManagementProps) => {
 
   const navigate = useNavigate(); // ✅
 
-  const handleRowClick = (id: string) => {
-    navigate(`/admin/payments/${id}`); 
-  };
+  const handleRowClick = (payment: Payment) => {
+    console.log('Clicked on row:', payment);
+  navigate(`/admin/payments/${payment.id}`, { state: { payment } });
+};
 
   const formatStatus = (status: string) => {
     switch (status.toLowerCase()) {
@@ -112,10 +113,10 @@ const PaymentManagement = ({ payments }: PaymentManagementProps) => {
 
                 return (
                   <TableRow
-                    key={payment.id}
-                    onClick={() => handleRowClick(payment.id)}
-                    className="hover:bg-gray-100 transition-colors cursor-pointer"
-                  >
+  key={payment.id}
+  onClick={() => handleRowClick(payment)}
+  className="hover:bg-gray-100 transition-colors cursor-pointer"
+>
                     <TableCell className="font-medium">{payment.id}</TableCell>
                     <TableCell>{payment.studentName || "N/A"}</TableCell>
                     <TableCell>{payment.email || "N/A"}</TableCell>
