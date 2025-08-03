@@ -324,7 +324,7 @@ const LiveSession = () => {
     setElapsedTime(0);
     setJitsiApi(null);
     setCurrentRoom("");
-    navigate("/booking-sessions");
+    navigate("/feedback/"+`${sessionId}`);
   };
 
   const formatTime = (seconds: number) => {

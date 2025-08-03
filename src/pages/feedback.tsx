@@ -27,7 +27,7 @@ const FeedbackForm = () => {
         return
     };
 
-      try {console.log(`http://localhost:5000/api/sessions/${sessionid}`)
+      try {console.log(`${baseURL}/api/sessions/${sessionid}`)
         const res = await axios.get(
           `${baseURL}/api/sessions/${sessionid}`
         );
@@ -58,25 +58,22 @@ const FeedbackForm = () => {
     }
 
     try {
-      const res = await axios.post(
-        `${baseURL}/api/sessions/feedback/${sessionid}`,
-        {
-          rating,
-          feedback,
-          studentId: user.id,
-        }
-      );
+  const res = await axios.post(
+    `${baseURL}/api/sessions/feedback/${sessionid}`,
+    { rating, feedback, studentId: user.id },
+    { headers: { 'Content-Type': 'application/json' } }
+  );
+  console.log("Feedback submitted:", res.data);
+} catch (err) {
+  if (err.response) {
+    console.error("Server responded with:", err.response.status, err.response.data);
+  } else if (err.request) {
+    console.error("No response received:", err.request);
+  } else {
+    console.error("Axios error:", err.message);
+  }
+}
 
-      if (res.status === 200) {
-        setSubmitted(true);
-        alert("Thank you for your feedback!");
-      } else {
-        alert(res.data?.message || "Failed to submit feedback");
-      }
-    } catch (err) {
-      console.error("Submission error:", err);
-      alert("Something went wrong while submitting feedback");
-    }
   };
 
   if (loading) {

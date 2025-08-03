@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { GraduationCap } from "lucide-react";
 import {
@@ -9,38 +10,32 @@ import {
 } from "@/components/ui/carousel";
 
 const MentorTeam = () => {
-  const mentors = [
-    {
-      name: "Cihir Reddy",
-      title: "JEE Topper",
-      institution: "IIT Delhi",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face"
-    },
-    {
-      name: "Utkarsh Panwar",
-      title: "NEET Topper",
-      institution: "VMMC Safdarjung Hospital, New Delhi",
-      image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop&crop=face"
-    },
-    {
-      name: "Dr. Priya Sharma",
-      title: "AIIMS Topper",
-      institution: "AIIMS Delhi",
-      image: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=200&h=200&fit=crop&crop=face"
-    },
-    {
-      name: "Arjun Mehta",
-      title: "JEE Advanced Topper",
-      institution: "IIT Bombay",
-      image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=face"
-    },
-    {
-      name: "Sneha Gupta",
-      title: "NEET PG Topper",
-      institution: "JIPMER Puducherry",
-      image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop&crop=face"
-    }
-  ];
+  const [mentors, setMentors] = useState([]);
+  const fallbackImage = "https://openclipart.org/image/800px/346569";
+
+  useEffect(() => {
+    const fetchMentors = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/mentors`);
+        const data = await response.json();
+
+        // Ensure data is in expected structure
+        const parsedMentors = data.map((mentor) => ({
+          name: mentor.userId?.name || "Unknown",
+          description: mentor.bio || "No description provided.",
+          image: mentor.profilePic?.trim()
+            ? mentor.profilePic
+            : fallbackImage,
+        }));
+
+        setMentors(parsedMentors);
+      } catch (error) {
+        console.error("Failed to fetch mentors:", error);
+      }
+    };
+
+    fetchMentors();
+  }, []);
 
   return (
     <section id='r-mentors' className="py-20 px-4 bg-gray-50">
@@ -81,17 +76,14 @@ const MentorTeam = () => {
                       {mentor.name}
                     </h3>
                     <p className="text-blue-600 font-semibold mb-2">
-                      {mentor.title}
-                    </p>
-                    <p className="text-gray-600 text-sm">
-                      {mentor.institution}
+                      {mentor.description}
                     </p>
                   </div>
                 </CarouselItem>
               ))}
             </CarouselContent>
-            
-            {/* Custom Navigation Buttons */}
+
+            {/* Navigation Buttons */}
             <div className="flex justify-center items-center mt-8 space-x-4">
               <CarouselPrevious className="relative translate-y-0 left-0 right-0 bg-blue-500 hover:bg-blue-600 text-white border-blue-500 hover:border-blue-600" />
               <CarouselNext className="relative translate-y-0 left-0 right-0 bg-blue-500 hover:bg-blue-600 text-white border-blue-500 hover:border-blue-600" />
