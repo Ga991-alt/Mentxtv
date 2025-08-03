@@ -6,7 +6,7 @@ import { Calendar, Clock, Users, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useUser } from "@/contexts/UserContext";
 
-interface SessionCardProps {
+export interface SessionCardProps {
   id: string;
   title: string;
   mentor: string;
@@ -19,7 +19,8 @@ interface SessionCardProps {
   subjects: string[];
   price: number;
   isBooked?: boolean;
-  students?:string[]
+  students?:string[];
+  completed:boolean;
 }
 
 const SessionCard = ({
@@ -34,16 +35,26 @@ const SessionCard = ({
   rating,
   subjects,
   price,
-  students
+  students,
+  completed
   // isBooked = false
 }: SessionCardProps) => {
   const {user} = useUser();
   const slotsText = `${availableSlots}/${totalSlots}`;
   let isBooked = false;
-  students.map((student)=>{
-    if(student===user.id) isBooked=true
-  })
 
+  // students.map((student)=>{
+  //   if(student===user.id) isBooked=true
+  // })
+if (students && user?.id) {
+    students.forEach((student) => {
+      if(student === user.id) isBooked = true;
+    });
+  }
+
+if(completed){
+  availableSlots=0
+}
   return (
     <Card className="w-full max-w-sm h-full flex flex-col">
       <CardContent className="p-6 space-y-4 flex-1 flex flex-col">

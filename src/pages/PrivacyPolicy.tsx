@@ -18,7 +18,7 @@ const PrivacyPolicy = () => {
   useEffect(() => {
     const fetchContent = async () => {
       try {
-        const res = await axios.get(`${BASE_URL}/api/about-us`);
+        const res = await axios.get(`${BASE_URL}/api/privacy-policy`);
         const about = res.data;
 
         // If the response is an object with "content" field

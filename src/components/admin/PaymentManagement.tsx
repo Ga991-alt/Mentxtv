@@ -4,6 +4,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Download } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
 
 interface Payment {
   id: string;
@@ -22,12 +24,19 @@ interface PaymentManagementProps {
 }
 
 const PaymentManagement = ({ payments }: PaymentManagementProps) => {
+
+  const navigate = useNavigate(); // ✅
+
+  const handleRowClick = (id: string) => {
+    navigate(`/admin/payments/${id}`); 
+  };
+
   const formatStatus = (status: string) => {
     switch (status.toLowerCase()) {
       case "paid":
       case "completed":
         return { label: "Completed", color: "bg-green-100 text-green-800" };
-      case "pending":
+      case "created":
         return { label: "Pending", color: "bg-yellow-100 text-yellow-800" };
       case "failed":
       default:
@@ -36,7 +45,7 @@ const PaymentManagement = ({ payments }: PaymentManagementProps) => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 cursor-pointer ">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Payment Details</h2>
         {/* <Button className="bg-blue-600 text-white">
@@ -102,7 +111,11 @@ const PaymentManagement = ({ payments }: PaymentManagementProps) => {
                 });
 
                 return (
-                  <TableRow key={payment.id}>
+                  <TableRow
+                    key={payment.id}
+                    onClick={() => handleRowClick(payment.id)}
+                    className="hover:bg-gray-100 transition-colors cursor-pointer"
+                  >
                     <TableCell className="font-medium">{payment.id}</TableCell>
                     <TableCell>{payment.studentName || "N/A"}</TableCell>
                     <TableCell>{payment.email || "N/A"}</TableCell>

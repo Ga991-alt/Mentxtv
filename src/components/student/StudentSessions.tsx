@@ -235,48 +235,53 @@ const StudentSessions = () => {
 const handleJoinLiveSession = async (sessionId: string) => {
   try {
     const baseUrl = import.meta.env.VITE_API_BASE_URL;
+    const normalizedSessionId = sessionId.trim();
 
     // 1. Fetch student data
     const studentRes = await axios.get(`${baseUrl}/api/students/${user.email}`);
     const student = studentRes.data;
+    const studentId = student._id.toString().trim();
 
-    // 2. Append sessionId if it's not already in attendedSessions
-    const currentSessions = student.attendedSessions || [];
-    const updatedSessions = currentSessions.includes(sessionId)
-      ? currentSessions
-      : [...currentSessions, sessionId];
+    // 2. Check if sessionId already exists in student's attendedSessions
+    // const currentSessions = (student.attendedSessions || []).map((id: string) => id.trim());
+    const currentSessions = (student.attendedSessions || []).map(
+  (session: { _id: string }) => session._id.trim()
+);
+    const alreadyAttended = currentSessions.includes(normalizedSessionId);
 
-    // 3. Update student (entire object with updated sessions)
-    await axios.put(`${baseUrl}/api/students/${studentId}`, {
-      ...student,
-      attendedSessions: updatedSessions
-    });
+    if (!alreadyAttended) {
+      // Add only if not present
+      await axios.put(`${baseUrl}/api/students/${studentId}`, {
+        ...student,
+        attendedSessions: [...currentSessions, normalizedSessionId],
+      });
+    }
 
-    // 4. Fetch session data
-    const sessionRes = await axios.get(`${baseUrl}/api/sessions/${sessionId}`);
+    // 3. Fetch session data
+    const sessionRes = await axios.get(`${baseUrl}/api/sessions/${normalizedSessionId}`);
     const session = sessionRes.data;
+    const currentAttendees = (session.attendedStudents || []).map((id: string) => id.trim());
+    const alreadyMarked = currentAttendees.includes(studentId);
 
-    // 5. Append studentId if not already in session.attendedStudents
-    const currentAttendees = session.attendedStudents || [];
-    const updatedAttendees = currentAttendees.includes(studentId)
-      ? currentAttendees
-      : [...currentAttendees, studentId];
+    if (!alreadyMarked) {
+      await axios.put(`${baseUrl}/api/sessions/${normalizedSessionId}`, {
+        ...session,
+        attendedStudents: [...currentAttendees, studentId],
+      });
+    }
 
-    // 6. Update session
-    await axios.put(`${baseUrl}/api/sessions/${sessionId}`, {
-      ...session,
-      attendedStudents: updatedAttendees
-    });
+    // 4. Always allow navigation to session page
+    navigate(`/live-session/${normalizedSessionId}`);
 
-    // 7. Redirect to Jitsi Meet
-    // const jitsiRoomUrl = `https://meet.jit.si/${sessionId}`;
-    // window.open(jitsiRoomUrl, '_blank');
-    navigate(`/live-session/${sessionId}`);
-    
   } catch (error) {
-    console.error('Failed to update student/session or join:', error);
+    console.error('Join Live Session Failed:', error);
   }
 };
+
+
+
+
+
 
 
 
