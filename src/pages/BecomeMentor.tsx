@@ -1,16 +1,79 @@
+import { useState } from "react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { FileText, Shield, Users, Video, CheckCircle, Users2, Award, TrendingUp } from "lucide-react";
+import { FileText, Shield, Users, Video, CheckCircle, Users2, Award, TrendingUp, X } from "lucide-react";
 
 const BecomeMentor = () => {
-  // Google Form URL - replace with actual Google Form URL
-  const GOOGLE_FORM_URL = "https://forms.google.com/your-mentor-registration-form";
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    dob: "",
+    education: "",
+    experience: "",
+    resume: null
+  });
 
-  const handleRegisterClick = () => {
-    window.open(GOOGLE_FORM_URL, '_blank');
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
+  const handleFileChange = (e) => {
+    setFormData(prev => ({
+      ...prev,
+      resume: e.target.files[0]
+    }));
+  };
+
+  // const handleSubmit = (e) => {
+  //   e.preventDefault();
+  //   // Here you would typically send the form data to your backend
+  //   console.log("Form submitted:", formData);
+  //   // Reset form and close
+  //   setFormData({
+  //     name: "",
+  //     email: "",
+  //     phone: "",
+  //     dob: "",
+  //     education: "",
+  //     experience: "",
+  //     resume: null
+  //   });
+  //   setShowForm(false);
+  //   alert("Thank you for your application! We'll review your information and get back to you soon.");
+  // };
+
+
+  const [result, setResult] = useState("");
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setResult("Sending....");
+    const formData = new FormData(event.target);
+
+    formData.append("access_key", "b6d87926-1570-4cdc-bbc5-a894b3bced0c");
+
+    const response = await fetch("https://api.web3forms.com/submit", {
+      method: "POST",
+      body: formData
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      setResult("Form Submitted Successfully");
+      event.target.reset();
+    } else {
+      console.log("Error", data);
+      setResult(data.message);
+    }
+  };
   const steps = [
     {
       icon: FileText,
@@ -86,7 +149,7 @@ const BecomeMentor = () => {
               </p>
               <Button 
                 size="lg"
-                onClick={handleRegisterClick}
+                onClick={() => setShowForm(true)}
                 className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 rounded-full text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
               >
                 Register as a Mentor
@@ -123,7 +186,7 @@ const BecomeMentor = () => {
               </p>
               <Button 
                 size="lg"
-                onClick={handleRegisterClick}
+                onClick={() => setShowForm(true)}
                 className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-4 rounded-full text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 mt-8"
               >
                 Register as a Mentor
@@ -201,7 +264,7 @@ const BecomeMentor = () => {
           <div className="text-center">
             <Button 
               size="lg"
-              onClick={handleRegisterClick}
+              onClick={() => setShowForm(true)}
               className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-4 rounded-full text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
             >
               Register as a Mentor
@@ -209,6 +272,154 @@ const BecomeMentor = () => {
           </div>
         </div>
       </section>
+
+      {/* Registration Form Modal */}
+      {showForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">Mentor Registration</h2>
+                <button 
+                  onClick={() => setShowForm(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+              
+              <form onSubmit={handleSubmit}>
+                <div className="grid md:grid-cols-2 gap-6 mb-6">
+                  <div>
+                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                      Full Name*
+                    </label>
+                    <input
+                      type="text"
+                      id="name"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                      Email Address*
+                    </label>
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                      Phone Number*
+                    </label>
+                    <input
+                      type="tel"
+                      id="phone"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="dob" className="block text-sm font-medium text-gray-700 mb-1">
+                      Date of Birth*
+                    </label>
+                    <input
+                      type="date"
+                      id="dob"
+                      name="dob"
+                      value={formData.dob}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+                
+                <div className="mb-6">
+                  <label htmlFor="education" className="block text-sm font-medium text-gray-700 mb-1">
+                    Educational Qualification*
+                  </label>
+                  <textarea
+                    id="education"
+                    name="education"
+                    value={formData.education}
+                    onChange={handleInputChange}
+                    required
+                    rows={3}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Include your degrees, institutions, and years of study"
+                  />
+                </div>
+                
+                <div className="mb-6">
+                  <label htmlFor="experience" className="block text-sm font-medium text-gray-700 mb-1">
+                    Teaching/Mentoring Experience*
+                  </label>
+                  <textarea
+                    id="experience"
+                    name="experience"
+                    value={formData.experience}
+                    onChange={handleInputChange}
+                    required
+                    rows={3}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Describe your relevant experience"
+                  />
+                </div>
+                
+                {/* <div className="mb-6">
+                  <label htmlFor="resume" className="block text-sm font-medium text-gray-700 mb-1">
+                    Upload Resume/CV*
+                  </label>
+                  <input
+                    type="file"
+                    id="resume"
+                    name="resume"
+                    onChange={handleFileChange}
+                    required
+                    accept=".pdf,.doc,.docx"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                  />
+                  <p className="mt-1 text-sm text-gray-500">PDF, DOC, or DOCX (Max. 5MB)</p>
+                </div> */}
+                
+                <div className="flex justify-end">
+                  <Button
+                    type="button"
+                    onClick={() => setShowForm(false)}
+                    className="mr-4 bg-gray-200 text-gray-800 hover:bg-gray-300"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="bg-blue-500 hover:bg-blue-600"
+                    disabled={!formData.name || !formData.email || !formData.phone || !formData.dob || !formData.education || !formData.experience || result !== "" /*|| !formData.resume*/}
+                  >
+                    Submit Application
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>
