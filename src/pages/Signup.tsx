@@ -5,13 +5,19 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, EyeOff, Mail, Lock, User, Phone, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/firebaseConfig"; // adjust path if different
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { auth , googleProvider, facebookProvider  } from "@/firebaseConfig"; // adjust path if different
 import { useNavigate } from "react-router-dom"; // optional: redirect after signup
 import axios from "axios";
+import { signInWithPopup } from "firebase/auth";
+import { signIn, useSession } from "next-auth/react";
+import { useUser } from "@/contexts/UserContext";
 
 
 const Signup = () => {
+
+    const { login } = useUser();
+    
   const BASE_URL = import.meta.env.VITE_API_BASE_URL;
   if (!BASE_URL) {
   console.warn("⚠️ BASE_URL is not defined! Check your .env file.");
@@ -70,6 +76,93 @@ const navigate = useNavigate();
 
  // Make sure axios is installed
 
+// const handleSubmit = async (e: React.FormEvent) => {
+//   e.preventDefault();
+
+//   if (formData.password !== formData.confirmPassword) {
+//     alert("Passwords don't match!");
+//     return;
+//   }
+
+//   try {
+//     // 1. Create Firebase user
+//     const userCredential = await createUserWithEmailAndPassword(
+//       auth,
+//       formData.email,
+//       formData.password
+//     );
+
+//     const firebaseUser = userCredential.user;
+//     console.log("✅ Firebase user created:", firebaseUser);
+
+//     // 2. Add user to MongoDB (/api/users)
+//     const userPayload = {
+//       name: `${formData.firstName} ${formData.lastName}`,
+//       email: formData.email,
+//       phone: formData.phone,
+//       role: "student",
+//     };
+
+//     const userResponse = await axios.post(`${BASE_URL}/api/users`, userPayload);
+//     const mongoUserId = userResponse.data._id; // Ensure backend returns _id
+
+//     console.log("✅ User saved in MongoDB with _id:", mongoUserId);
+
+//     // 3. Add student data to MongoDB (/api/students)
+//     const studentPayload = {
+//       userId: mongoUserId,
+//       interests: ["Mathematics", "Science"],
+//       enrolledSessions: [],
+//       attendedSessions: [],
+//       profilePic: "https://example.com/profilepic.jpg",
+//       educationLevel: "Undergraduate",
+//       goal: "Become a Data Scientist",
+//       payments: [],
+//       totalSpent: 1500,
+//     };
+
+//     await axios.post(`${BASE_URL}/api/students`, studentPayload);
+//     console.log("✅ Student profile created");
+
+//     // 4. Redirect to login
+//     // navigate("/login");
+
+   
+//         // Firebase login
+//         const userCredential1 = await signInWithEmailAndPassword(
+//           auth,
+//           formData.email,
+//           formData.password
+//         );
+//         const user = userCredential1.user;
+    
+//         const baseURL = `${import.meta.env.VITE_API_BASE_URL}/api`;
+//         const endpoint = 
+//            `${baseURL}/students/${encodeURIComponent(user.email || "")}`;
+    
+//         const response = await fetch(endpoint);
+//         if (!response.ok) {
+//           throw new Error("User record not found in DB");
+//         }
+    
+//         const fullUserData = await response.json();
+//         console.log("Full user data:", fullUserData);
+//         // Save user in context
+//         login({
+//           name: fullUserData.userId?.name || fullUserData.name || user.email?.split("@")[0],
+//           email: fullUserData.userId?.email || fullUserData.email || "",
+//           role:  "Student",
+//           id: fullUserData._id // MongoDB ID
+//         });
+    
+//         navigate("/"); 
+//   } catch (error: any) {
+//     console.error("❌ Signup error:", error);
+//     alert("Signup failed: " + error.message);
+//   }
+// };
+
+
 const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
 
@@ -79,47 +172,59 @@ const handleSubmit = async (e: React.FormEvent) => {
   }
 
   try {
-    // 1. Create Firebase user
+    // 1. Firebase Auth
     const userCredential = await createUserWithEmailAndPassword(
       auth,
       formData.email,
       formData.password
     );
-
     const firebaseUser = userCredential.user;
     console.log("✅ Firebase user created:", firebaseUser);
 
-    // 2. Add user to MongoDB (/api/users)
+    // 2. Add user to /api/users
     const userPayload = {
       name: `${formData.firstName} ${formData.lastName}`,
       email: formData.email,
       phone: formData.phone,
       role: "student",
     };
-
     const userResponse = await axios.post(`${BASE_URL}/api/users`, userPayload);
-    const mongoUserId = userResponse.data._id; // Ensure backend returns _id
-
+    const mongoUserId = userResponse.data._id;
     console.log("✅ User saved in MongoDB with _id:", mongoUserId);
 
-    // 3. Add student data to MongoDB (/api/students)
+    // 3. Add student to /api/students
     const studentPayload = {
       userId: mongoUserId,
-      interests: ["Mathematics", "Science"],
+      interests: [],
       enrolledSessions: [],
       attendedSessions: [],
       profilePic: "https://example.com/profilepic.jpg",
-      educationLevel: "Undergraduate",
-      goal: "Become a Data Scientist",
+      educationLevel: "",
+      goal: "",
       payments: [],
-      totalSpent: 1500,
+      totalSpent: 0,
     };
-
     await axios.post(`${BASE_URL}/api/students`, studentPayload);
     console.log("✅ Student profile created");
 
-    // 4. Redirect to login
-    navigate("/login");
+    // 4. Get full user data from MongoDB
+    const endpoint = `${BASE_URL}/api/students/${encodeURIComponent(firebaseUser.email || "")}`;
+    const response = await fetch(endpoint);
+    if (!response.ok) throw new Error("User record not found in DB");
+
+    const fullUserData = await response.json();
+    console.log("Full user data:", fullUserData);
+
+    // 5. Login in Context
+    login({
+      name: fullUserData.userId?.name || fullUserData.name || firebaseUser.email?.split("@")[0],
+      email: fullUserData.userId?.email || fullUserData.email || "",
+      role: "Student",
+      id: fullUserData._id,
+    });
+
+    // 6. Redirect
+    navigate("/");
   } catch (error: any) {
     console.error("❌ Signup error:", error);
     alert("Signup failed: " + error.message);
@@ -134,6 +239,128 @@ const handleSubmit = async (e: React.FormEvent) => {
       [name]: type === 'checkbox' ? checked : value
     }));
   };
+
+
+   const handleGoogleSignIn = async () => {
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    const user = result.user;
+    console.log("✅ Google user:", user);
+
+    // 1. Create user
+    const userPayload = {
+      name: user.displayName || "Unknown User",
+      email: user.email || "",
+      phone: user.phoneNumber || "",
+      role: "student",
+    };
+
+    const userRes = await axios.post(`${BASE_URL}/api/users`, userPayload);
+    const mongoUserId = userRes.data._id;
+    console.log("✅ MongoDB User ID:", mongoUserId);
+
+    // 2. Create student with cleaned payload
+    const studentPayload = {
+      userId: mongoUserId,
+      interests: [],
+      enrolledSessions: [],
+      attendedSessions: [],
+      profilePic: user.photoURL || "",
+      educationLevel: "",
+      goal: "",
+      payments: [],
+      totalSpent: 0,
+    };
+
+    await axios.post(`${BASE_URL}/api/students`, studentPayload);
+    console.log("✅ Student profile created");
+
+    // 3. Retrieve student full data
+    const baseURL = `${import.meta.env.VITE_API_BASE_URL}/api`;
+    const endpoint = `${baseURL}/students/${encodeURIComponent(user.email || "")}`;
+    const response = await fetch(endpoint);
+
+    if (!response.ok) throw new Error("User record not found in DB");
+
+    const fullUserData = await response.json();
+
+    // 4. Set login context
+    login({
+      name: fullUserData.userId?.name || user.displayName || "",
+      email: fullUserData.userId?.email || user.email || "",
+      role: "Student",
+      id: fullUserData._id,
+    });
+
+    navigate("/");
+
+  } catch (error: any) {
+    console.error("❌ Google sign-in error:", error);
+    alert("Google Sign-in failed: " + error.message);
+  }
+};
+
+const handleFacebookSignIn = async () => {
+  try {
+    const result = await signInWithPopup(auth, facebookProvider);
+    const user = result.user;
+    console.log("✅ Facebook user:", user);
+
+    // 1. Create user
+    const userPayload = {
+      name: user.displayName || "Unknown User",
+      email: user.email || "",
+      phone: user.phoneNumber || "",
+      role: "student",
+    };
+
+    const userRes = await axios.post(`${BASE_URL}/api/users`, userPayload);
+    const mongoUserId = userRes.data._id;
+    console.log("✅ MongoDB User ID:", mongoUserId);
+
+    // 2. Create student with cleaned payload
+    const studentPayload = {
+      userId: mongoUserId,
+      interests: [],
+      enrolledSessions: [],
+      attendedSessions: [],
+      profilePic: user.photoURL || "",
+      educationLevel: "",
+      goal: "",
+      payments: [],
+      totalSpent: 0,
+    };
+
+    await axios.post(`${BASE_URL}/api/students`, studentPayload);
+    console.log("✅ Student profile created");
+
+    // 3. Retrieve student full data
+    const baseURL = `${import.meta.env.VITE_API_BASE_URL}/api`;
+    const endpoint = `${baseURL}/students/${encodeURIComponent(user.email || "")}`;
+    const response = await fetch(endpoint);
+
+    if (!response.ok) throw new Error("User record not found in DB");
+
+    const fullUserData = await response.json();
+
+    // 4. Set login context
+    login({
+      name: fullUserData.userId?.name || user.displayName || "",
+      email: fullUserData.userId?.email || user.email || "",
+      role: "Student",
+      id: fullUserData._id,
+    });
+
+    navigate("/");
+
+  } catch (error: any) {
+    console.error("❌ Facebook sign-in error:", error);
+    alert("Facebook Sign-in failed: " + error.message);
+  }
+};
+
+
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex items-center justify-center p-4">
@@ -335,8 +562,8 @@ const handleSubmit = async (e: React.FormEvent) => {
             </div>
 
             {/* Social Signup */}
-            <div className="grid grid-cols-2 gap-3">
-              <Button variant="outline" className="h-12">
+            {/* <div className="grid grid-cols-2 gap-3">
+              <Button variant="outline" className="h-12" onClick={handleGoogleSignIn}>
                 <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                   <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                   <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -345,13 +572,13 @@ const handleSubmit = async (e: React.FormEvent) => {
                 </svg>
                 Google
               </Button>
-              <Button variant="outline" className="h-12">
+              <Button variant="outline" className="h-12" onClick={handleFacebookSignIn}>
                 <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                 </svg>
                 Facebook
               </Button>
-            </div>
+            </div> */}
 
             {/* Login Link */}
             <div className="text-center">

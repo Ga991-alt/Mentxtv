@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '@/firebaseConfig';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -11,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Eye, Edit, Trash2, Star } from "lucide-react";
-
+import emailjs from '@emailjs/browser';
 interface Mentor {
   id: string;
   email: string;
@@ -23,6 +24,8 @@ interface Mentor {
 
 interface MentorFormData {
   userEmail: string;
+  name: string;
+  phone: string;
   bio: string;
   subjects: string[];
   domain: string;
@@ -51,6 +54,8 @@ const MentorManagement = ({ mentors }: MentorManagementProps) => {
     education: "",
     expertise: [],
     domain: "",
+    name: "",
+  phone: "",
   });
 
   const renderStars = (rating: number) =>
@@ -73,58 +78,144 @@ const MentorManagement = ({ mentors }: MentorManagementProps) => {
   };
 
   const handleEditMentor = async (email: string) => {
-    try {
-      const res = await axios.get(`${baseURL}/api/mentors/${email}`);
-      const data = res.data;
+  try {
+    const res = await axios.get(`${baseURL}/api/mentors/${email}`);
+    const data = res.data;
 
-      setFormData({
-        userEmail: data.userId.email,
-        bio: data.bio,
-        education: data.education,
-        domain: data.domain,
-        expertise: data.expertise || [],
-        subjects: data.subjects || [],
-      });
+    setFormData({
+      userEmail: data.userId.email,
+      name: data.userId.name || "",
+      phone: data.userId.phone || "",
+      bio: data.bio,
+      education: data.education,
+      domain: data.domain,
+      expertise: data.expertise || [],
+      subjects: data.subjects || [],
+    });
 
-      setSelectedMentorId(data._id);
-      setIsEditing(true);
-      setEditDialogOpen(true);
-    } catch (err) {
-      console.error("Failed to fetch mentor details", err);
-    }
-  };
+    setSelectedMentorId(data._id);
+    setIsEditing(true);
+    setEditDialogOpen(true);
+  } catch (err) {
+    console.error("Failed to fetch mentor details", err);
+  }
+};
 
-  const handleSubmit = async () => {
+
+const handleSubmit = async () => {
+  try {
+    let userId = null;
+
+    // 1. Try to fetch user by email
     try {
       const userRes = await axios.get(`${baseURL}/api/users/${formData.userEmail}`);
-      const userId = userRes.data?._id;
-      if (!userId) return;
+      userId = userRes.data?._id;
+    } catch (fetchErr) {
+      if (fetchErr.response?.status === 404) {
+        // User doesn't exist, create Firebase Auth user
+        const randomPassword = generateRandomPassword();
 
-      const payload = { ...formData, userId };
-      delete payload.userEmail;
+        try {
+          const firebaseUser = await createUserWithEmailAndPassword(
+            auth,
+            formData.userEmail,
+            randomPassword
+          );
 
-      if (isEditing && selectedMentorId) {
-        await axios.put(`${baseURL}/api/mentors/${selectedMentorId}`, payload);
-        setEditDialogOpen(false);
+          // Then create user in your DB
+          const newUserPayload = {
+            name: formData.name,
+            email: formData.userEmail,
+            phone: formData.phone,
+            role: "mentor",
+          };
+
+          const createUserRes = await axios.post(`${baseURL}/api/users`, newUserPayload);
+          userId = createUserRes.data._id;
+
+          // Send password email
+          console.log(formData.userEmail, formData.name , randomPassword)
+          await sendMentorEmail (formData.userEmail, formData.name , randomPassword);
+
+        } catch (firebaseErr) {
+          console.error("Firebase user creation failed:", firebaseErr);
+          return;
+        }
       } else {
-        await axios.post(`${baseURL}/api/mentors`, payload);
-        setOpen(false);
+        throw fetchErr;
       }
-
-      setFormData({
-        userEmail: "",
-        bio: "",
-        subjects: [],
-        education: "",
-        expertise: [],
-        domain: "",
-      });
-
-      setIsEditing(false);
-    } catch (err) {
-      console.error("Failed to submit mentor data", err);
     }
-  };
+
+    if (!userId) {
+      console.error("User ID could not be resolved.");
+      return;
+    }
+
+    // 2. Create or update mentor
+    const payload = {
+      ...formData,
+      userId,
+    };
+    delete payload.userEmail;
+    delete payload.phone;
+    delete payload.name;
+
+    if (isEditing && selectedMentorId) {
+      await axios.put(`${baseURL}/api/mentors/${selectedMentorId}`, payload);
+      setEditDialogOpen(false);
+    } else {
+      await axios.post(`${baseURL}/api/mentors`, payload);
+      setOpen(false);
+    }
+
+    // Reset
+    setFormData({
+      userEmail: "",
+      name: "",
+      phone: "",
+      bio: "",
+      subjects: [],
+      education: "",
+      expertise: [],
+      domain: "",
+    });
+
+    setIsEditing(false);
+  } catch (err) {
+    console.error("Failed to submit mentor data", err);
+  }
+};
+
+
+
+const generateRandomPassword = () => {
+  const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+  return Array.from({ length: 10 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+};
+
+
+
+
+const sendMentorEmail = async (userEmail, userName, tempPassword) => {
+  try {
+    const response = await emailjs.send(
+      'service_wlgurti',        
+      'template_lwdamtv',       
+      {
+        email: userEmail,       
+        user_name: userName,    
+        temp_password: tempPassword,  
+        reply_to: 'charanrajb282004@gmail.com',
+      },
+      'cNuVIkw2p653gZ8dX'         // e.g. bxhLqRJZsLXgP4...
+    );
+
+    console.log('Email sent successfully:', response.status, response.text);
+  } catch (error) {
+    console.error('Failed to send email:', error);
+  }
+};
+
 
   return (
     <div className="space-y-6">
@@ -266,6 +357,16 @@ const MentorForm = ({
       onChange={(e) => setFormData({ ...formData, userEmail: e.target.value })}
       disabled={isEditing}
       className={isEditing ? "cursor-not-allowed bg-gray-100" : ""}
+    />
+    <Input
+      placeholder="Name"
+      value={formData.name}
+      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+    />
+    <Input
+      placeholder="Phone"
+      value={formData.phone}
+      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
     />
     <Textarea
       placeholder="Bio"

@@ -39,9 +39,9 @@ const Navigation = () => {
   const sideMenuItems = [
     { icon: User, label: "Login/Signup", href: "/login" },
     { icon: FileText, label: "Blogs", href: "/blogs" },
-    { icon: Users, label: "Become a mentor", href: "/become-mentor" },
+    // { icon: Users, label: "Become a mentor", href: "/become-mentor" },
     { icon: Users, label: "About Us", href: "/about" },
-    { icon: HelpCircle, label: "FAQ's", href: "/faq" },
+    // { icon: HelpCircle, label: "FAQ's", href: "/faq" },
     { icon: FileText, label: "Terms and Conditions", href: "/terms" },
     { icon: Shield, label: "Privacy Policy", href: "/privacy" },
   ];
@@ -49,9 +49,9 @@ const Navigation = () => {
   const loggedInSideMenuItems = [
     { icon: User, label: "Dashboard", href: getDashboardLink() },
     { icon: FileText, label: "Blogs", href: "/blogs" },
-    { icon: Users, label: "Become a mentor", href: "/become-mentor" },
+    // { icon: Users, label: "Become a mentor", href: "/become-mentor" },
     { icon: Users, label: "About Us", href: "/about" },
-    { icon: HelpCircle, label: "FAQ's", href: "/faq" },
+    // { icon: HelpCircle, label: "FAQ's", href: "/faq" },
     { icon: FileText, label: "Terms and Conditions", href: "/terms" },
     { icon: Shield, label: "Privacy Policy", href: "/privacy" },
   ];
@@ -74,13 +74,13 @@ const Navigation = () => {
                 className="h-8 w-8"
               />
               <h1 className="text-2xl font-bold text-gray-900">MentxTv</h1>
-              <svg
+              {/* <svg
                 viewBox="0 0 24 24"
                 className="h-6 w-6 text-gray-700 ml-2"
                 fill="currentColor"
               >
                 <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-              </svg>
+              </svg> */}
             </Link>
 
             {/* Desktop Navigation */}
@@ -92,12 +92,12 @@ const Navigation = () => {
                 >
                   Home
                 </a>
-                <a
+                {!user && <a
                   href="/become-mentor"
                   className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
                 >
                   Become a Mentor
-                </a>
+                </a>}
                 <a
                   href="/exam-details"
                   className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
@@ -188,12 +188,12 @@ const Navigation = () => {
                 >
                   Home
                 </a>
-                <a
+                {!user && <a
                   href="/become-mentor"
                   className="text-gray-700 block px-3 py-2 text-base font-medium"
                 >
                   Become a Mentor
-                </a>
+                </a>}
                 <a
                   href="/exam-details"
                   className="text-gray-700 block px-3 py-2 text-base font-medium"
@@ -206,12 +206,12 @@ const Navigation = () => {
                 >
                   Test Portal
                 </a>
-                <a
+                {user && <a
                   href="/booking-sessions"
                   className="text-gray-700 block px-3 py-2 text-base font-medium"
                 >
                   Booking Sessions
-                </a>
+                </a>}
                 <div className="flex flex-col space-y-2 px-3 py-2">
                   {user ? (
                     <Link to={getDashboardLink()}>
@@ -273,13 +273,13 @@ const Navigation = () => {
                   className="h-6 w-6"
                 />
                 <h2 className="text-xl font-bold text-gray-900">MentxTv</h2>
-                <svg
+                {/* <svg
                   viewBox="0 0 24 24"
                   className="h-5 w-5 text-gray-700"
                   fill="currentColor"
                 >
                   <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                </svg>
+                </svg> */}
               </div>
               <button
                 onClick={() => setIsSideMenuOpen(false)}
