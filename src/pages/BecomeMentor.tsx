@@ -57,7 +57,7 @@ const BecomeMentor = () => {
     setResult("Sending....");
     const formData = new FormData(event.target);
 
-    formData.append("access_key", "b6d87926-1570-4cdc-bbc5-a894b3bced0c");
+    formData.append("access_key", "973cfd86-9817-4086-ad3c-7d4ef14c2dca");
 
     const response = await fetch("https://api.web3forms.com/submit", {
       method: "POST",

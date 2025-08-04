@@ -109,9 +109,15 @@ const PostSession = () => {
   };
 
   const subjects = [
-    "Physics", "Chemistry", "Mathematics", "Biology", 
-    "English", "History", "Geography", "Computer Science", 
-    "Economics", "NEET Preparation", "JEE Preparation", "UPSC Preparation"
+    "IIT JEE Mentorship",
+    "NEET Mentorship",
+    "GATE Mentorship",
+    "UPSC Mentorship",
+    "BITSAT Mentorship",
+    "CLAT Mentorship",
+    "CA Mentorship",
+    "NIFT Mentorship",
+    "CAT Mentorship",
   ];
 
   const timeSlots = [

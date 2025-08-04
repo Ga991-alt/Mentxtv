@@ -794,18 +794,15 @@ const BookingSessions = () => {
 
   const categories = [
     { label: "All", value: "All" },
-    { label: "Physics", value: "Physics" },
-    { label: "Chemistry", value: "Chemistry" },
-    { label: "Mathematics", value: "Mathematics" },
-    { label: "Biology", value: "Biology" },
-    { label: "English", value: "English" },
-    { label: "History", value: "History" },
-    { label: "Geography", value: "Geography" },
-    { label: "Computer Science", value: "Computer Science" },
-    { label: "Economics", value: "Economics" },
-    { label: "NEET Preparation", value: "NEET Preparation" },
-    { label: "JEE Preparation", value: "JEE Preparation" },
-    { label: "UPSC Preparation", value: "UPSC Preparation" }
+    { label: "IIT JEE Mentorship", value: "IIT JEE Mentorship" },
+    { label: "NEET Mentorship", value: "NEET Mentorship" },
+    { label: "GATE Mentorship", value: "GATE Mentorship" },
+    { label: "CAT Mentorship", value: "CAT Mentorship" },
+    { label: "UPSC Mentorship", value: "UPSC Mentorship" },
+    { label: "BITSAT Mentorship", value: "BITSAT Mentorship" },
+    { label: "CLAT Mentorship", value: "CLAT Mentorship" },
+    { label: "CA Mentorship", value: "CA Mentorship" },
+    { label: "NIFT Mentorship", value: "NIFT Mentorship" },
   ];
   
 
