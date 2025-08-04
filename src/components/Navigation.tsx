@@ -262,13 +262,21 @@ const Navigation = () => {
                       </div>
                     </Link></div>
                   ) : (
-                    <Button
+                    <><Button
                       variant="outline"
                       className="border-blue-500 text-blue-600 hover:bg-blue-50 rounded-full"
                       onClick={() => (window.location.href = "/login")}
                     >
                       LOGIN
                     </Button>
+                    <Button
+                      variant="outline"
+                      className="border-blue-500 text-blue-600 hover:bg-blue-50 rounded-full"
+                      onClick={() => (window.location.href = "/signup")}
+                >
+                  SIGN UP
+                </Button>
+                    </>
                   )}
                 </div>
               </div>
