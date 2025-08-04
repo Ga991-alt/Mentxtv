@@ -375,7 +375,7 @@ const handleFacebookSignIn = async () => {
           <CardHeader className="text-center pb-2">
             <div className="mx-auto mb-4 w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
               <img 
-                src="/lovable-uploads/5d782425-50a4-4419-8ded-ab9e0ed405cb.png" 
+                src="/mentxtv-uploads/5d782425-50a4-4419-8ded-ab9e0ed405cb.png" 
                 alt="MentxTv" 
                 className="w-10 h-10"
               />

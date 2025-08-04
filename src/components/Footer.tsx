@@ -38,8 +38,8 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto">
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
           {/* About Us */}
-          <div>
-            <h3 className="text-xl font-bold mb-6">About Us</h3>
+          <div className="mr-10">
+            <h3 className="text-xl font-bold mb-6 ">About Us</h3>
             <p className="text-gray-300 leading-relaxed">
               A Student driven Mentorship platform. Our vision is to make
               actionable guidance and mentorship accessible to every student in
@@ -49,8 +49,8 @@ const Footer = () => {
 
           {/* Important Links */}
           <div>
-            <h3 className="text-xl font-bold mb-6 ml-10">Featured Links</h3>
-            <div  className="space-y-3 ml-10">
+            <h3 className="text-xl font-bold mb-6 ml-0">Featured Links</h3>
+            <div  className="space-y-3 ml-0">
               <a
                 href="/exam-details"
                 className="block text-gray-300 hover:text-blue-400 transition-colors"

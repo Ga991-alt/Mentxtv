@@ -151,6 +151,7 @@ const Navigation = () => {
                   </Avatar>
                 </Link>
               ) : (
+                <>
                 <Button
                   variant="outline"
                   className="border-blue-500 text-blue-600 hover:bg-blue-50 px-6 py-2 rounded-full font-medium"
@@ -158,6 +159,13 @@ const Navigation = () => {
                 >
                   LOGIN
                 </Button>
+                <Button
+                  variant="outline"
+                  className="border-gray-700 text-gray-700 hover:bg-blue-50 px-6 py-2 rounded-full font-medium"
+                  onClick={() => (window.location.href = "/signup")}
+                >
+                  SIGN UP
+                </Button></>
               )}
               <button
                 onClick={() => setIsSideMenuOpen(true)}
@@ -212,8 +220,16 @@ const Navigation = () => {
                 >
                   Booking Sessions
                 </a>}
-                <div className="flex flex-col space-y-2 px-3 py-2">
+                <div className="flex flex-col space-y-2 px-3 py-2 pl-0">
                   {user ? (
+                    <div>
+                      <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center space-x-3 p-3 text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    >
+                      <User size={20} />
+                      <span>Logout</span>
+                    </button>
                     <Link to={getDashboardLink()}>
                       <div className="flex items-center gap-2 p-2">
                         <Avatar className="h-8 w-8">
@@ -244,7 +260,7 @@ const Navigation = () => {
                         </Avatar>
                         <span className="text-sm">{user.name}</span>
                       </div>
-                    </Link>
+                    </Link></div>
                   ) : (
                     <Button
                       variant="outline"
