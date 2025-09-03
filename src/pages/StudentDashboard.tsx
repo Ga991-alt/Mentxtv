@@ -4,10 +4,13 @@ import StudentStats from "@/components/student/StudentStats";
 import StudentSessions from "@/components/student/StudentSessions";
 import StudentQuickActions from "@/components/student/StudentQuickActions";
 import StudentMentors from "@/components/student/StudentMentors";
+import StudentTestResults from "@/components/student/StudentTestResults";
+import StudentSubscriptions from "@/components/student/StudentSubscriptions";
 
 const StudentDashboard = () => {
   const { user } = useUser();
   const studentName = user?.name || "Student";
+
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -31,8 +34,10 @@ const StudentDashboard = () => {
         {/* Sessions */}
         <StudentSessions />
         
-        <StudentMentors/>
+        {/* <StudentMentors/> */}
 
+        <StudentTestResults />
+        <StudentSubscriptions userId= {user.id}/>
         {/* Quick Actions */}
         <div className="mt-8">
           <StudentQuickActions />

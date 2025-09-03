@@ -4,7 +4,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { UserProvider } from "@/contexts/UserContext";
-
+import Mentors from "./pages/Mentors";
+import TestResult from "./pages/TestResult";
+import TestExam from "./pages/TestExam";
 // Pages
 import Index from "./pages/Index";
 import ExamDetails from "./pages/ExamDetails";
@@ -48,6 +50,11 @@ import Appointments  from "./pages/Appointments";
 import ProtectedRoute from "./components/ProtectedRoute";
 import MentorsPage from "./pages/ViewallMentors";
 import SubscribePage from "./pages/Subscribe";
+import SubscriptionPayment from "./pages/subscriptionPage";
+import PaymentDetail from "./components/admin/PaymentDetails";
+import SubscriptionDetail from "./components/admin/SubscriptionDetail";
+import MySubscribers from "./pages/MySubscribers";
+import SubscribePlans from "./pages/SubscribePlans";
 
 const queryClient = new QueryClient();
 
@@ -85,9 +92,12 @@ const App = () => (
               path="/student-dashboard-result"
               element={<StudentDashboardResult />}
             />
+            <Route path='/mentors' element={<Mentors/>}/>
+            <Route path="/test-page/" element={<TestExam/>}/>
+            <Route path="/test-result/" element={<TestResult/>}/>
             <Route path="/mentor-dashboard" element={<MentorDashboard />} />
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
-
+            <Route path="/mentors/:mentorId/subscribe" element={<SubscribePlans />} />
             {/* Booking & Payments */}
             <Route path="/booking-sessions" element={<BookingSessions />} />
             <Route path="/payment/:sessionId" element={<Payment />} />
@@ -95,6 +105,7 @@ const App = () => (
               path="/session-details/:sessionId"
               element={<SessionDetails />}
             />
+            <Route path="/admin/payments/:id" element={<PaymentDetail />} />
 
             {/* Exams */}
             <Route path="/exam-page" element={<ExamPage />} />
@@ -105,6 +116,7 @@ const App = () => (
               path="/student-performance"
               element={<StudentPerformance />}
             />
+            <Route path="my-subscribers" element={<MySubscribers />} />
 
             {/* Live Sessions */}
             <Route path="/live-session/:sessionId" element={<LiveSession />} />
@@ -132,10 +144,12 @@ const App = () => (
             />
 
             {/* View Details */}
+            <Route path="/admin/subscriptions/:id" element={<SubscriptionDetail />} />
             <Route path="/view-mentor/:email" element={<ViewMentor />} />
             <Route path="/view-student/:email" element={<ViewStudent />} />
             <Route path='viewallmentors' element={<MentorsPage/>}/>
-            <Route path='/subscribe/:mentorid' element={<SubscribePage/>}/>
+            <Route path='/subscribe/:mentorId' element={<SubscribePage/>}/>
+            <Route path='/subscription-payment' element={<SubscriptionPayment/>}/>
             {/* Catch-all */}
             <Route path="*" element={<NotFound />} />
           </Routes>

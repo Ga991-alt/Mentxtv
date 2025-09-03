@@ -94,18 +94,22 @@
 //   );
 // }
 
-
 import { Check, X } from "lucide-react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import { useUser } from "@/contexts/UserContext";
 
 export default function SubscribePage() {
   const { mentorId } = useParams<{ mentorId: string }>();
+  console.log("Mentor ID from URL:", mentorId);
+  const { user } = useUser();
+  const navigate = useNavigate();
 
   const plans = [
     {
       id: 1,
       title: "1 Month",
-      price: "$59",
+      price: 3000,
+      months: 1,
       color: "bg-blue-500",
       features: [
         { text: "One-to-One Mentor Session", available: true },
@@ -117,7 +121,8 @@ export default function SubscribePage() {
     {
       id: 2,
       title: "3 Months",
-      price: "$149",
+      price: 7000,
+      months: 3,
       color: "bg-yellow-500",
       features: [
         { text: "One-to-One Mentor Session", available: true },
@@ -129,7 +134,8 @@ export default function SubscribePage() {
     {
       id: 3,
       title: "6 Months",
-      price: "$249",
+      price: 12000,
+      months: 6,
       color: "bg-green-500",
       features: [
         { text: "One-to-One Mentor Session", available: true },
@@ -140,10 +146,29 @@ export default function SubscribePage() {
     },
   ];
 
-  const handleSubscribe = (planId: number) => {
-    // For now just log, you can call your backend here
-    console.log(`Subscribing to plan ${planId} for mentor ${mentorId}`);
-    // Example: navigate(`/checkout/${mentorId}?plan=${planId}`)
+  const handleSubscribe = (plan: any) => {
+    if (!user?.id) {
+      alert("Please login as a student to subscribe");
+      return;
+    }
+
+    const today = new Date();
+    const endDate = new Date();
+    endDate.setMonth(today.getMonth() + plan.months);
+
+    const payload = {
+      mentorId,
+      studentId: user.id,
+      plan: plan.title,
+      startDate: today,
+      endDate,
+      amount: plan.price,
+    };
+
+    console.log("Subscription Payload:", payload);
+
+    // Navigate to payment/subscription confirmation page with state
+    navigate("/subscription-payment", { state: payload });
   };
 
   return (
@@ -166,7 +191,9 @@ export default function SubscribePage() {
             </div>
 
             {/* Price */}
-            <p className="text-3xl font-bold text-gray-800 mb-6">{plan.price}</p>
+            <p className="text-3xl font-bold text-gray-800 mb-6">
+              {"₹"}{plan.price}
+            </p>
 
             {/* Features */}
             <ul className="space-y-3 w-full">
@@ -174,7 +201,9 @@ export default function SubscribePage() {
                 <li
                   key={i}
                   className={`flex items-center gap-2 text-sm font-medium ${
-                    f.available ? "text-gray-700" : "text-gray-400 line-through"
+                    f.available
+                      ? "text-gray-700"
+                      : "text-gray-400 line-through"
                   }`}
                 >
                   {f.available ? (
@@ -189,7 +218,7 @@ export default function SubscribePage() {
 
             {/* Button */}
             <button
-              onClick={() => handleSubscribe(plan.id)}
+              onClick={() => handleSubscribe(plan)}
               className={`${plan.color} text-white mt-6 px-6 py-2 rounded-full font-medium hover:opacity-90`}
             >
               Subscribe Now

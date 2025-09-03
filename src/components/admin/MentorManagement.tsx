@@ -161,7 +161,10 @@ const handleSubmit = async () => {
     delete payload.name;
 
     if (isEditing && selectedMentorId) {
-      await axios.put(`${baseURL}/api/mentors/${selectedMentorId}`, payload);
+      console.log("editing")
+      const result = await axios.put(`${baseURL}/api/mentors/${selectedMentorId}`, payload);
+      console.log("updated",payload)
+      console.log("result",result)
       setEditDialogOpen(false);
     } else {
       await axios.post(`${baseURL}/api/mentors`, payload);
@@ -341,6 +344,77 @@ const sendMentorEmail = async (userEmail, userName, tempPassword) => {
   );
 };
 
+// const MentorForm = ({
+//   formData,
+//   setFormData,
+//   isEditing,
+// }: {
+//   formData: MentorFormData;
+//   setFormData: React.Dispatch<React.SetStateAction<MentorFormData>>;
+//   isEditing: boolean;
+// }) => (
+//   <div className="space-y-4">
+//     <Input
+//       placeholder="Email"
+//       value={formData.userEmail}
+//       onChange={(e) => setFormData({ ...formData, userEmail: e.target.value })}
+//       disabled={isEditing}
+//       className={isEditing ? "cursor-not-allowed bg-gray-100" : ""}
+//     />
+//     <Input
+//       placeholder="Name"
+//       value={formData.name}
+//       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+//     />
+//     <Input
+//       placeholder="Phone"
+//       value={formData.phone}
+//       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+//     />
+//     <Textarea
+//       placeholder="Bio"
+//       value={formData.bio}
+//       onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+//     />
+//     <Input
+//       placeholder="Subjects (comma separated)"
+//       value={formData.subjects.join(", ")}
+//       onChange={(e) =>
+//         setFormData({ ...formData, subjects: e.target.value.split(",").map((s) => s.trim()) })
+//       }
+//     />
+//     <Input
+//       placeholder="Education"
+//       value={formData.education}
+//       onChange={(e) => setFormData({ ...formData, education: e.target.value })}
+//     />
+//     <Input
+//       placeholder="Domain"
+//       value={formData.domain}
+//       onChange={(e) => setFormData({ ...formData, domain: e.target.value })}
+//     />
+//     <Input
+//       placeholder="Expertise (comma separated)"
+//       value={formData.expertise.join(", ")}
+//       onChange={(e) =>
+//         setFormData({ ...formData, expertise: e.target.value.split(",").map((s) => s.trim()) })
+//       }
+//     />
+//   </div>
+// );
+
+const domains = [
+  "JEE Main",
+  "JEE Advanced",
+  "NEET",
+  "BITSAT",
+  "VITEEE",
+  "COMEDK",
+  "KCET",
+  "MHT CET",
+  "WBJEE",
+];
+
 const MentorForm = ({
   formData,
   setFormData,
@@ -385,11 +459,24 @@ const MentorForm = ({
       value={formData.education}
       onChange={(e) => setFormData({ ...formData, education: e.target.value })}
     />
-    <Input
-      placeholder="Domain"
+
+    {/* Domain Dropdown */}
+    <Select
       value={formData.domain}
-      onChange={(e) => setFormData({ ...formData, domain: e.target.value })}
-    />
+      onValueChange={(value) => setFormData({ ...formData, domain: value })}
+    >
+      <SelectTrigger>
+        <SelectValue placeholder="Select Domain" />
+      </SelectTrigger>
+      <SelectContent>
+        {domains.map((domain) => (
+          <SelectItem key={domain} value={domain}>
+            {domain}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+
     <Input
       placeholder="Expertise (comma separated)"
       value={formData.expertise.join(", ")}

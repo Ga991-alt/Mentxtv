@@ -118,12 +118,12 @@ const Navigation = () => {
                 >
                   Our mentors
                 </a>
-                <a
+                {/* <a
                   href="/exam-page"
                   className="text-gray-700 block px-3 py-2 text-base font-medium"
                 >
                   Give Exam
-                </a>
+                </a> */}
 
                 <a
                   href="/booking-sessions"

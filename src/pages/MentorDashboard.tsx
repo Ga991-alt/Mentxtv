@@ -373,40 +373,49 @@ const requests = [
             </Card>
 
             {/* Quick Actions */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-                <p className="text-sm text-gray-600">
-                  Manage your mentoring activities
-                </p>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <Link to="/post-session">
-                  <Button className="w-full bg-gray-900 hover:bg-gray-800 flex items-center gap-2">
-                    <Plus size={16} />
-                    Post New Session
-                  </Button>
-                </Link>
-                <Link to="/create-test">
-                  <Button
-                    variant="outline"
-                    className="w-full flex items-center gap-2"
-                  >
-                    <List size={16} />
-                    Create New Test Portal
-                  </Button>
-                </Link>
-                <Link to="/view-allexam">
-                  <Button
-                    variant="outline"
-                    className="w-full flex items-center gap-2"
-                  >
-                    <List size={16} />
-                    View All Exam Details
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Quick Actions</CardTitle>
+                  <p className="text-sm text-gray-600">
+                    Manage your mentoring activities
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Link to="/post-session">
+                    <Button className="w-full bg-gray-900 hover:bg-gray-800 flex items-center gap-2">
+                      <Plus size={16} />
+                      Post New Session
+                    </Button>
+                  </Link>
+                  <Link to="/create-test">
+                    <Button
+                      variant="outline"
+                      className="w-full flex items-center gap-2"
+                    >
+                      <List size={16} />
+                      Create New Test Portal
+                    </Button>
+                  </Link>
+                  <Link to="/view-allexam">
+                    <Button
+                      variant="outline"
+                      className="w-full flex items-center gap-2"
+                    >
+                      <List size={16} />
+                      View All Exam Details
+                    </Button>
+                  </Link>
+                  <Link to="/my-subscribers">
+                    <Button
+                      variant="outline"
+                      className="w-full flex items-center gap-2"
+                    >
+                      <Users size={16} />
+                      My Subscribers
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
           </div>
 
           {/* Right column: Posted Sessions */}

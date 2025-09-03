@@ -9,6 +9,8 @@ import ContentManagement from "@/components/admin/ContentManagement";
 import { dashboardStats, mentors, students, sessionData, payments } from "@/data/adminMockData";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import SubscriptionManagement from "./SubscriptionManagement";
+import TestManagement from "./TestManagement";
 
 interface Payment {
   id: string;
@@ -341,6 +343,31 @@ useEffect(() => {
             // onInputChange={onSocialLinksChange}
             // onSave={onSocialLinksSave}
           />
+        </>
+      )}
+
+
+      {activeTab === 'subscribe' && (
+        <>
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">Social Media</h2>
+            <p className="text-gray-600">Manage social media links and settings.</p>
+          </div>
+          <SubscriptionManagement 
+            // links={socialLinks}
+            // onInputChange={onSocialLinksChange}
+            // onSave={onSocialLinksSave}
+          />
+        </>
+      )}
+
+      {activeTab === 'tests' && (
+        <>
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">Test Management</h2>
+            <p className="text-gray-600">Create and manage test questions and portal content.</p>
+          </div>
+          <TestManagement />
         </>
       )}
     </main>

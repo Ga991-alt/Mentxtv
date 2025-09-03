@@ -83,18 +83,12 @@ const SessionManagement = ({
 
   const filterSessions = (sessions: any[], domain: string) => {
     return sessions.filter((session) => {
-      return (
-        domain === "all" ||
-        session.domain?.toLowerCase() === domain.toLowerCase()
-      );
+      return domain === "all" || session.domain?.toLowerCase() === domain.toLowerCase();
     });
   };
 
   const filteredLiveSessions = filterSessions(liveSessions, selectedDomain);
-  const filteredUpcomingSessions = filterSessions(
-    upcomingSessions,
-    selectedDomain
-  );
+  const filteredUpcomingSessions = filterSessions(upcomingSessions, selectedDomain);
   const filteredEndedSessions = filterSessions(endedSessions, selectedDomain);
 
   const openModal = async (
@@ -104,9 +98,7 @@ const SessionManagement = ({
     setModalState({ isOpen: true, sessionId, sessionType });
     try {
       const res = await axios.get(
-        `${
-          import.meta.env.VITE_API_BASE_URL
-        }/api/sessions/${sessionId}/students`
+        `${import.meta.env.VITE_API_BASE_URL}/api/sessions/${sessionId}/students`
       );
       setStudents(res.data);
     } catch (err) {
@@ -164,16 +156,13 @@ const SessionManagement = ({
             ? filteredUpcomingSessions
             : filteredEndedSessions;
 
-        if (selectedCategory !== "all" && selectedCategory !== type)
-          return null;
+        if (selectedCategory !== "all" && selectedCategory !== type) return null;
         if (!sessions.length) return null;
 
         return (
           <Card key={type}>
             <CardHeader>
-              <CardTitle className="text-lg capitalize">
-                {type} Sessions
-              </CardTitle>
+              <CardTitle className="text-lg capitalize">{type} Sessions</CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
@@ -199,9 +188,11 @@ const SessionManagement = ({
                         <Badge>{session.domain}</Badge>
                       </TableCell>
                       <TableCell>
-                        {(session as any).studentsAttending ||
+                        {
+                          (session as any).studentsAttending ||
                           (session as any).studentsRegistered ||
-                          (session as any).studentsAttended}
+                          (session as any).studentsAttended
+                        }
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-2">
@@ -209,15 +200,7 @@ const SessionManagement = ({
                             variant="outline"
                             size="sm"
                             className="bg-blue-100 text-blue-800"
-                            onClick={
-                              type === "ended"
-                                ? () =>
-                                    window.open(
-                                      `/session-details/${session.id}`,
-                                      "_blank"
-                                    )
-                                : () => openModal(session.id, type)
-                            }
+                            onClick={type==="ended"? ()=> window.open(`/session-details/${session.id}`, "_blank") : () => openModal(session.id, type)}
                           >
                             View Details
                           </Button>
@@ -242,10 +225,10 @@ const SessionManagement = ({
       })}
 
       {/* Footer Action Buttons */}
-      {/* <div className="flex gap-4 mt-6">
+      <div className="flex gap-4 mt-6">
         <Button className="bg-blue-600 text-white">See Live Class</Button>
         <Button variant="outline">Total Mentors</Button>
-      </div> */}
+      </div>
 
       {/* Student Modal */}
       <StudentDetailsModal
