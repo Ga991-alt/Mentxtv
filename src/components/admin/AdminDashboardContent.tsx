@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import SubscriptionManagement from "./SubscriptionManagement";
 import TestManagement from "./TestManagement";
-
+import FeedbackManagement from "@/components/admin/FeedbackManagement";
 interface Payment {
   id: string;
   studentName: string;
@@ -287,6 +287,17 @@ useEffect(() => {
           <MentorManagement mentors={mentors} />
         </>
       )}
+
+
+      {activeTab === 'feedback' && (
+        <>
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">Feedback Management</h2>
+            <p className="text-gray-600">Manage testimonials and feedback from students and mentors.</p>
+          </div>
+          <FeedbackManagement />
+      </>
+  )}
 
       {activeTab === 'students' && (
         <>

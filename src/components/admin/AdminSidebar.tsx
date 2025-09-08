@@ -119,7 +119,8 @@ import {
   X,
   PenTool,
   ClipboardCheck,
-  DollarSign
+  DollarSign,
+  MessageSquare
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -144,6 +145,7 @@ const AdminSidebar = ({ isOpen, onClose }: AdminSidebarProps) => {
     { icon: ClipboardCheck, label: "Test Management", href: "/admin-dashboard?tab=tests" },
     { icon: Share2, label: "Social Media", href: "/admin-dashboard?tab=social" },
     { icon: DollarSign, label: "Subscription", href: "/admin-dashboard?tab=subscribe" },
+    { icon: MessageSquare, label: "Feedback Management", href: "/admin-dashboard?tab=feedback" },
   ];
 
   const isActive = (path: string) => {

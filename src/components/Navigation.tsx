@@ -113,7 +113,7 @@ const Navigation = () => {
                   Test Portal
                 </a>
                 <a
-                  href="/viewallmentors"
+                  href="/mentors"
                   className="text-gray-700 block px-3 py-2 text-base font-medium"
                 >
                   Our mentors
