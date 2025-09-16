@@ -131,9 +131,12 @@ const handleSubmit = async (e: React.FormEvent) => {
     login({
       name: fullUserData.userId?.name || fullUserData.name || user.email?.split("@")[0],
       email: fullUserData.userId?.email || fullUserData.email || "",
+      phone: `${fullUserData.userId?.phone || fullUserData.phone || ""}`,
       role: selectedRole as "Student" | "Mentor",
       id: fullUserData._id // MongoDB ID
     });
+
+    console.log("User logged in:", user);
 
     navigate("/");
   } catch (error: any) {

@@ -440,17 +440,120 @@ const PostSession = () => {
   const { user } = useUser();
 
   const [sessionData, setSessionData] = useState({
-    title: "",
-    description: "",
-    mentorName: user?.name || "",
-    subject: "",
-    date: "",
-    time: "",
-    duration: "",
-    totalSlots: "",
-    price: "",
-    type: "group" as "group" | "onetoone",
-  });
+  title: "",
+  description: "",
+  mentorName: user?.name || "",
+  category: "",
+  subject: "", // will hold subcategory
+  date: "",
+  time: "",
+  duration: "",
+  totalSlots: "",
+  price: "",
+  type: "group" as "group" | "onetoone",
+});
+
+const mentorshipCategories = {
+  "School & Academic": [
+    "Primary & Secondary (Class 1–10)",
+    "Higher Secondary (Class 11–12)",
+    "Olympiads & NTSE",
+    "Board Exam Preparation",
+    "Subject-Specific Mentoring (Math, Science, English, etc.)",
+  ],
+  "Competitive Exams": [
+    "JEE Preparation",
+    "NEET Preparation",
+    "UPSC / Civil Services",
+    "SSC / Banking / Railways",
+    "CAT / MBA Entrance",
+    "GATE / GRE / GMAT",
+    "NDA / CDS (Defence)",
+  ],
+  "Engineering & Tech": [
+    "Mechanical Engineering",
+    "Electrical & Electronics",
+    "Civil Engineering",
+    "Computer Science & IT",
+    "Chemical Engineering",
+    "Robotics & Automation",
+    "Aerospace Engineering",
+  ],
+  "Medical & Healthcare": [
+    "MBBS Preparation",
+    "Nursing Careers",
+    "Pharmacy & Paramedical",
+    "Dentistry",
+    "Allied Health Sciences",
+    "Overseas Medical Licensing (USMLE, PLAB, etc.)",
+  ],
+  "Management & Finance": [
+    "Chartered Accountancy (CA)",
+    "Company Secretary (CS)",
+    "Cost & Management Accounting (CMA)",
+    "MBA Specializations",
+    "Stock Market & Investment",
+    "Financial Analysis & Consulting",
+  ],
+  "Study Abroad": [
+    "US / Canada Admissions",
+    "UK / Europe Admissions",
+    "Australia / NZ Admissions",
+    "Scholarships & Funding Guidance",
+    "Visa & Application Guidance",
+    "Language Tests (IELTS, TOEFL, PTE)",
+  ],
+  "Creative & Media": [
+    "Design (Graphic, Product, UI/UX)",
+    "Photography & Videography",
+    "Film & Acting",
+    "Writing & Journalism",
+    "Fine Arts & Animation",
+    "Music & Performing Arts",
+  ],
+  "Government & PSU Jobs": [
+    "UPSC Mentorship",
+    "SSC / Railway Exams",
+    "Banking (IBPS, SBI, RBI)",
+    "Defence & Paramilitary",
+    "Public Sector Undertakings (GAIL, ONGC, BHEL, etc.)",
+  ],
+  "Entrepreneurship": [
+    "Startup Mentorship",
+    "Business Strategy",
+    "Funding & Pitching",
+    "Product Development",
+    "Marketing & Growth Hacking",
+    "Leadership & Team Building",
+  ],
+  "IT & Digital Skills": [
+    "Software Development",
+    "Data Science & AI",
+    "Cybersecurity",
+    "Cloud Computing & DevOps",
+    "Web & App Development",
+    "Blockchain & Web3",
+    "Digital Marketing",
+    "Computer Science",
+  ],
+  "Personality & Life Skills": [
+    "Public Speaking & Communication",
+    "Soft Skills & Confidence Building",
+    "Career Counselling",
+    "Time Management & Productivity",
+    "Mindfulness & Stress Management",
+    "Leadership & Teamwork",
+  ],
+  "Law & Misc Careers": [
+    "Law Entrance Exams (CLAT, LSAT)",
+    "Judiciary Preparation",
+    "Corporate Law Careers",
+    "NGO & Social Work",
+    "Education & Teaching",
+    "Other Niche Career Guidance",
+  ],
+};
+
 
   const handleInputChange = (field: string, value: string) => {
     setSessionData((prev) => ({
@@ -621,23 +724,48 @@ const PostSession = () => {
               </div>
 
               <div>
-                <Label htmlFor="subject">Subject *</Label>
-                <Select
-                  value={sessionData.subject}
-                  onValueChange={(value) => handleInputChange("subject", value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select subject" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {subjects.map((subject) => (
-                      <SelectItem key={subject} value={subject}>
-                        {subject}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+  <Label htmlFor="category">Category *</Label>
+  <Select
+    value={sessionData.category}
+    onValueChange={(value) => {
+      handleInputChange("category", value);
+      handleInputChange("subject", ""); // reset subcategory when category changes
+    }}
+  >
+    <SelectTrigger>
+      <SelectValue placeholder="Select category" />
+    </SelectTrigger>
+    <SelectContent>
+      {Object.keys(mentorshipCategories).map((cat) => (
+        <SelectItem key={cat} value={cat}>
+          {cat}
+        </SelectItem>
+      ))}
+    </SelectContent>
+  </Select>
+</div>
+
+{sessionData.category && (
+  <div>
+    <Label htmlFor="subject">Subcategory *</Label>
+    <Select
+      value={sessionData.subject}
+      onValueChange={(value) => handleInputChange("subject", value)}
+    >
+      <SelectTrigger>
+        <SelectValue placeholder="Select subcategory" />
+      </SelectTrigger>
+      <SelectContent>
+        {mentorshipCategories[sessionData.category].map((sub) => (
+          <SelectItem key={sub} value={sub}>
+            {sub}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  </div>
+)}
+
 
               <div className="grid grid-cols-2 gap-4">
                 <div>

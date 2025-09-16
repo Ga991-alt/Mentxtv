@@ -7,6 +7,7 @@ import { useEffect } from "react"; // if not already
 interface User {
   name: string;
   email: string;
+  phone?: string;
   role: 'Student' | 'Mentor' | 'Admin';
   image?: string;
   id: string;

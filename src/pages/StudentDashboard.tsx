@@ -3,13 +3,14 @@ import StudentHeader from "@/components/student/StudentHeader";
 import StudentStats from "@/components/student/StudentStats";
 import StudentSessions from "@/components/student/StudentSessions";
 import StudentQuickActions from "@/components/student/StudentQuickActions";
-import StudentMentors from "@/components/student/StudentMentors";
+// import StudentMentors from "@/components/student/StudentMentors";
 import StudentTestResults from "@/components/student/StudentTestResults";
 import StudentSubscriptions from "@/components/student/StudentSubscriptions";
 
 const StudentDashboard = () => {
   const { user } = useUser();
   const studentName = user?.name || "Student";
+  console.log("Current user in StudentDashboard:", user);
 
 
   return (

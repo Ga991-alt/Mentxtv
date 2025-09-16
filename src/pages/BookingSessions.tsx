@@ -383,38 +383,126 @@
 // };
 
 // export default BookingSessions;
-
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import SessionCard from "@/components/SessionCard";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-const BookingSessions = () => {
-  const [sessions, setSessions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState("All");
+const mentorshipCategories = {
+  "School & Academic": [
+    "Primary & Secondary (Class 1–10)",
+    "Higher Secondary (Class 11–12)",
+    "Olympiads & NTSE",
+    "Board Exam Preparation",
+    "Subject-Specific Mentoring (Math, Science, English, etc.)",
+  ],
+  "Competitive Exams": [
+    "JEE Preparation",
+    "NEET Preparation",
+    "UPSC / Civil Services",
+    "SSC / Banking / Railways",
+    "CAT / MBA Entrance",
+    "GATE / GRE / GMAT",
+    "NDA / CDS (Defence)",
+  ],
+  "Engineering & Tech": [
+    "Mechanical Engineering",
+    "Electrical & Electronics",
+    "Civil Engineering",
+    "Computer Science & IT",
+    "Chemical Engineering",
+    "Robotics & Automation",
+    "Aerospace Engineering",
+  ],
+  "Medical & Healthcare": [
+    "MBBS Preparation",
+    "Nursing Careers",
+    "Pharmacy & Paramedical",
+    "Dentistry",
+    "Allied Health Sciences",
+    "Overseas Medical Licensing (USMLE, PLAB, etc.)",
+  ],
+  "Management & Finance": [
+    "Chartered Accountancy (CA)",
+    "Company Secretary (CS)",
+    "Cost & Management Accounting (CMA)",
+    "MBA Specializations",
+    "Stock Market & Investment",
+    "Financial Analysis & Consulting",
+  ],
+  "Study Abroad": [
+    "US / Canada Admissions",
+    "UK / Europe Admissions",
+    "Australia / NZ Admissions",
+    "Scholarships & Funding Guidance",
+    "Visa & Application Guidance",
+    "Language Tests (IELTS, TOEFL, PTE)",
+  ],
+  "Creative & Media": [
+    "Design (Graphic, Product, UI/UX)",
+    "Photography & Videography",
+    "Film & Acting",
+    "Writing & Journalism",
+    "Fine Arts & Animation",
+    "Music & Performing Arts",
+  ],
+  "Government & PSU Jobs": [
+    "UPSC Mentorship",
+    "SSC / Railway Exams",
+    "Banking (IBPS, SBI, RBI)",
+    "Defence & Paramilitary",
+    "Public Sector Undertakings (GAIL, ONGC, BHEL, etc.)",
+  ],
+  Entrepreneurship: [
+    "Startup Mentorship",
+    "Business Strategy",
+    "Funding & Pitching",
+    "Product Development",
+    "Marketing & Growth Hacking",
+    "Leadership & Team Building",
+  ],
+  "IT & Digital Skills": [
+    "Software Development",
+    "Data Science & AI",
+    "Cybersecurity",
+    "Cloud Computing & DevOps",
+    "Web & App Development",
+    "Blockchain & Web3",
+    "Digital Marketing",
+    "Computer Science"
+  ],
+  "Personality & Life Skills": [
+    "Public Speaking & Communication",
+    "Soft Skills & Confidence Building",
+    "Career Counselling",
+    "Time Management & Productivity",
+    "Mindfulness & Stress Management",
+    "Leadership & Teamwork",
+  ],
+  "Law & Misc Careers": [
+    "Law Entrance Exams (CLAT, LSAT)",
+    "Judiciary Preparation",
+    "Corporate Law Careers",
+    "NGO & Social Work",
+    "Education & Teaching",
+    "Other Niche Career Guidance",
+  ],
+};
 
-  const categories = [
-    { label: "All", value: "All" },
-    { label: "IIT JEE Mentorship", value: "IIT JEE Mentorship" },
-    { label: "NEET Mentorship", value: "NEET Mentorship" },
-    { label: "GATE Mentorship", value: "GATE Mentorship" },
-    { label: "CAT Mentorship", value: "CAT Mentorship" },
-    { label: "UPSC Mentorship", value: "UPSC Mentorship" },
-    { label: "BITSAT Mentorship", value: "BITSAT Mentorship" },
-    { label: "CLAT Mentorship", value: "CLAT Mentorship" },
-    { label: "CA Mentorship", value: "CA Mentorship" },
-    { label: "NIFT Mentorship", value: "NIFT Mentorship" },
-  ];
+
+const BookingSessions = () => {
+  const [sessions, setSessions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedMainCategory, setSelectedMainCategory] = useState("All");
+  const [selectedSubCategory, setSelectedSubCategory] = useState("All");
 
   useEffect(() => {
     const fetchSessions = async () => {
       try {
-        const res = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/api/sessions`
-        );
+        const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/sessions`);
         setSessions(res.data);
       } catch (error) {
         console.error("Failed to fetch sessions:", error);
@@ -426,149 +514,119 @@ const BookingSessions = () => {
   }, []);
 
   const groupSessions = sessions.filter((session) => session.type === "group");
-  const oneToOneSessions = sessions.filter(
-    (session) => session.type === "onetoone"
-  );
 
-  const normalize = (str) => str?.toLowerCase().replace(/\s+/g, "");
+  const normalize = (str: string) => str?.toLowerCase().replace(/\s+/g, "");
 
-  const filterByCategory = (sessions) => {
-    if (selectedCategory === "All") return sessions;
+  const filterByCategory = (sessions: any[]) => {
+  // No main category selected
+  if (selectedMainCategory === "All") return sessions;
 
-    const normalizedCategory = normalize(selectedCategory);
+  const subs = mentorshipCategories[selectedMainCategory].map(sub => normalize(sub));
 
-    return sessions.filter((session) => {
-      const sessionCategory = session.category || "";
-      const sessionSubjects = Array.isArray(session.subjects)
-        ? session.subjects
-        : [session.subject || ""];
-
-      const inCategory = normalize(sessionCategory) === normalizedCategory;
-
-      const inSubjects = sessionSubjects.some(
-        (subject) => normalize(subject) === normalizedCategory
-      );
-
-      return inCategory || inSubjects;
+  if (selectedSubCategory && selectedSubCategory !== "All") {
+    // Filter sessions that contain the selected subcategory in their subjects
+    return sessions.filter((s) => {
+      const sessionSubjects = Array.isArray(s.subjects) ? s.subjects : [s.subject || "General"];
+      return sessionSubjects.some((subj: string) => normalize(subj) === normalize(selectedSubCategory));
     });
-  };
+  }
+
+  // Only main category selected, show sessions that match any subcategory
+  return sessions.filter((s) => {
+    const sessionSubjects = Array.isArray(s.subjects) ? s.subjects : [s.subject || "General"];
+    return sessionSubjects.some((subj: string) => subs.includes(normalize(subj)));
+  });
+};
+
 
   const filteredGroupSessions = filterByCategory(groupSessions);
-  const filteredOneToOneSessions = filterByCategory(oneToOneSessions);
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Navigation />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">
-            Book Your Sessions
-          </h1>
-          <p className="text-gray-600">
-            Choose from our available mentorship sessions and book your slot.
+      <main className="mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-6">
+        {/* Main content */}
+        <section className="flex-1">
+          <div className="flex justify-between">
+          <div>
+
+          <h1 className="text-xl sm:text-2xl font-bold mb-4">Book Your Sessions</h1>
+          <p className="text-sm text-gray-600 mb-4">
+            Showing {filteredGroupSessions.length} of {groupSessions.length} group sessions
+            {selectedSubCategory !== "All" ? ` for ${selectedSubCategory}` : selectedMainCategory !== "All" ? ` in ${selectedMainCategory}` : ""}
           </p>
-        </div>
+          </div>
 
-        {/* Category Filter */}
-        <div className="mb-6 max-w-xs">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Filter by Category
-          </label>
-          <select
-            className="border border-gray-300 rounded-md px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full"
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-          >
-            {categories.map((cat) => (
-              <option key={cat.value} value={cat.value}>
-                {cat.label}
-              </option>
-            ))}
-          </select>
-        </div>
+          <div className="flex flex-wrap gap-4 items-center mb-4">
+          <span className="font-semibold text-gray-700">Filter Options:</span>
 
-        <Tabs defaultValue="group" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-8">
-            <TabsTrigger value="group">Group Sessions</TabsTrigger>
-            <TabsTrigger value="onetoone">One-to-One Mentorship</TabsTrigger>
-          </TabsList>
+          {/* Main Category */}
+          <div className="w-64">
+            <Select value={selectedMainCategory} onValueChange={(val) => {
+              setSelectedMainCategory(val);
+              setSelectedSubCategory("All"); // reset subcategory
+            }}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Main Category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All">All Categories</SelectItem>
+                {Object.keys(mentorshipCategories).map((main) => (
+                  <SelectItem key={main} value={main}>{main}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-          {/* Group Sessions */}
-          <TabsContent value="group">
-            <div className="mb-4">
-              <p className="text-sm text-gray-600">
-                Showing {filteredGroupSessions.length} of {groupSessions.length}{" "}
-                group sessions
-                {selectedCategory !== "All" && ` for ${selectedCategory}`}
-              </p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredGroupSessions.map((session) => (
-                <SessionCard
-                  key={session._id || session.id}
-                  id={session._id || session.id}
-                  title={session.title}
-                  mentor={session.mentorName || session.mentor}
-                  date={session.date}
-                  time={session.time}
-                  duration={session.duration}
-                  availableSlots={
-                    session.seats - (session.bookedStudents?.length || 0)
-                  }
-                  totalSlots={session.seats}
-                  rating={session.rating || 0.0}
-                  subjects={
-                    Array.isArray(session.subjects)
-                      ? session.subjects
-                      : [session.subject || "General"]
-                  }
-                  price={session.price}
-                  students={session.bookedStudents || []}
-                />
-              ))}
-            </div>
-          </TabsContent>
+          {/* Subcategory */}
+          <div className="w-64">
+            <Select value={selectedSubCategory} onValueChange={setSelectedSubCategory}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Subcategory" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All">All</SelectItem>
+                {selectedMainCategory !== "All" &&
+                  mentorshipCategories[selectedMainCategory].map((sub) => (
+                    <SelectItem key={sub} value={sub}>{sub}</SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div></div>
 
-          {/* One-to-One Sessions */}
-          <TabsContent value="onetoone">
-            <div className="mb-4">
-              <p className="text-sm text-gray-600">
-                Showing {filteredOneToOneSessions.length} of{" "}
-                {oneToOneSessions.length} one-to-one sessions
-                {selectedCategory !== "All" && ` for ${selectedCategory}`}
-              </p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredOneToOneSessions.map((session) => (
-                <SessionCard
-                  key={session._id || session.id}
-                  id={session._id || session.id}
-                  title={session.title}
-                  mentor={session.mentorName || session.mentor}
-                  date={session.date}
-                  time={session.time}
-                  duration={session.duration}
-                  availableSlots={
-                    session.seats - (session.bookedStudents?.length || 0)
-                  }
-                  totalSlots={session.seats || 1}
-                  rating={session.rating || 0.0}
-                  subjects={
-                    Array.isArray(session.subjects)
-                      ? session.subjects
-                      : [session.subject || "General"]
-                  }
-                  price={session.price}
-                  isBooked={
-                    session.seats - (session.bookedStudents?.length || 0) <= 0
-                  }
-                  students={session.bookedStudents || []}
-                />
-              ))}
-            </div>
-          </TabsContent>
-        </Tabs>
+
+          <Tabs defaultValue="group" className="w-full">
+            <TabsContent value="group">
+              {loading ? (
+                <p className="text-center text-gray-500">Loading...</p>
+              ) : filteredGroupSessions.length === 0 ? (
+                <p className="text-center text-gray-500">No sessions available.</p>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+                  {filteredGroupSessions.map((session) => (
+                    <SessionCard
+                      key={session._id || session.id}
+                      id={session._id || session.id}
+                      title={session.title}
+                      mentor={session.mentorName || session.mentor}
+                      date={session.date}
+                      time={session.time}
+                      duration={session.duration}
+                      availableSlots={session.seats - (session.bookedStudents?.length || 0)}
+                      totalSlots={session.seats}
+                      rating={session.rating || 0.0}
+                      subjects={Array.isArray(session.subjects) ? session.subjects : [session.subject || "General"]}
+                      price={session.price}
+                      students={session.bookedStudents || []}
+                    />
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+        </section>
       </main>
 
       <Footer />

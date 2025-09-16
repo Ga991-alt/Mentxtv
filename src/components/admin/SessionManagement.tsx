@@ -139,7 +139,7 @@ const SessionManagement = ({
             <SelectValue placeholder="Select Category" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
+            <SelectItem value="all">All Status</SelectItem>
             <SelectItem value="live">Live Session</SelectItem>
             <SelectItem value="upcoming">Upcoming Session</SelectItem>
             <SelectItem value="ended">Ended Session</SelectItem>

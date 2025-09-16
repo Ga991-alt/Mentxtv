@@ -55,6 +55,7 @@ import PaymentDetail from "./components/admin/PaymentDetails";
 import SubscriptionDetail from "./components/admin/SubscriptionDetail";
 import MySubscribers from "./pages/MySubscribers";
 import SubscribePlans from "./pages/SubscribePlans";
+import PaymentPage from "./pages/demopayment";
 
 const queryClient = new QueryClient();
 
@@ -127,6 +128,7 @@ const App = () => (
 
             {/* Feedback */}
             <Route path="/feedback/:sessionid" element={<FeedbackForm />} />
+            <Route path="/demopayment" element={<PaymentPage />} />
 
             {/* Auth */}
             <Route path="/forgot-password" element={<ForgotPassword />} />
