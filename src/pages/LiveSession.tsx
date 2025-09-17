@@ -370,6 +370,7 @@ import { Input } from "@/components/ui/input";
 import { Timer, Users, Send, MessageSquare } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUser } from "@/contexts/UserContext";
+import { io } from "socket.io-client";
 
 declare global {
   interface Window {
@@ -391,7 +392,13 @@ interface Message {
   isLocal: boolean;
 }
 
-const ChatBox = ({ messages, onSendMessage }: { messages: Message[], onSendMessage: (text: string) => void }) => {
+const ChatBox = ({
+  messages,
+  onSendMessage,
+}: {
+  messages: Message[];
+  onSendMessage: (text: string) => void;
+}) => {
   const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -407,12 +414,16 @@ const ChatBox = ({ messages, onSendMessage }: { messages: Message[], onSendMessa
     }
   };
 
- 
   return (
     <div className="flex flex-col h-full">
       <div className="flex-grow space-y-4 overflow-y-auto pr-2">
         {messages.map((msg, index) => (
-          <div key={index} className={`flex items-start gap-3 ${msg.isLocal ? "justify-end" : ""}`}>
+          <div
+            key={index}
+            className={`flex items-start gap-3 ${
+              msg.isLocal ? "justify-end" : ""
+            }`}
+          >
             {!msg.isLocal && (
               <Avatar className="h-8 w-8">
                 <AvatarImage src={msg.avatar} />
@@ -421,10 +432,14 @@ const ChatBox = ({ messages, onSendMessage }: { messages: Message[], onSendMessa
             )}
             <div
               className={`rounded-lg px-3 py-2 max-w-xs ${
-                msg.isLocal ? "bg-primary text-primary-foreground" : "bg-muted"
+                msg.isLocal
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted"
               }`}
             >
-              {!msg.isLocal && <p className="text-xs font-semibold pb-1">{msg.name}</p>}
+              {!msg.isLocal && (
+                <p className="text-xs font-semibold pb-1">{msg.name}</p>
+              )}
               <p className="text-sm">{msg.text}</p>
             </div>
             {msg.isLocal && (
@@ -455,7 +470,7 @@ const ChatBox = ({ messages, onSendMessage }: { messages: Message[], onSendMessa
 const LiveSession = () => {
   const navigate = useNavigate();
   const { sessionId } = useParams();
- const user = useUser();
+  const user = useUser();
   const jitsiContainerRef = useRef<HTMLDivElement | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -465,12 +480,58 @@ const LiveSession = () => {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
 
+  // ✅ WebSocket setup
+  const socketRef = useRef<any>(null);
+  useEffect(() => {
+    // WebSocket setup
+const SOCKET_URL =  "https://mentxtv.com"
+socketRef.current = io(SOCKET_URL, {
+  transports: ["websocket"],
+  path: "/socket.io", // ✅ path matches server + Nginx
+});
+
+
+    if (sessionId && user?.user?.id) {
+      socketRef.current.emit("joinSession", {
+        sessionId,
+        userId: user.user.id,
+      });
+    }
+
+    socketRef.current.on(
+      "receiveSessionMessage",
+      ({ message, userId, name }) => {
+        if(userId===user?.user?.id) return; // Ignore own messages
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: userId,
+            name: name || "User",
+            avatar: `https://avatar.vercel.sh/${userId}.png`,
+            text: message,
+            isLocal: false,
+          },
+        ]);
+      }
+    );
+
+    return () => {
+      if (sessionId && user?.user?.id) {
+        socketRef.current.emit("leaveSession", {
+          sessionId,
+          userId: user.user.id,
+        });
+      }
+      socketRef.current.disconnect();
+    };
+  }, [sessionId, user]);
+
   // Load Jitsi script
   useEffect(() => {
     const scriptId = "jitsi-script";
     if (!document.getElementById(scriptId)) {
       const script = document.createElement("script");
-      script.src = "https://meet.mentxtv.com/external_api.js"; // ✅ your domain
+      script.src = "https://meet.mentxtv.com/external_api.js";
       script.async = true;
       script.id = scriptId;
       script.onload = () => setJitsiReady(true);
@@ -485,30 +546,28 @@ const LiveSession = () => {
     };
   }, [jitsiApi]);
 
-  // Init Jitsi when ready
-  // Init Jitsi when ready
-useEffect(() => {
-  if (jitsiReady && !jitsiApi && sessionId && user?.user?.name) {
-    if (typeof window.JitsiMeetExternalAPI !== "undefined") {
-      handleJoin(sessionId, user.user.name);
-    } else {
-      const interval = setInterval(() => {
-        if (typeof window.JitsiMeetExternalAPI !== "undefined") {
-          clearInterval(interval);
-          handleJoin(sessionId, user.user.name);
-        }
-      }, 500);
+  // Init Jitsi
+  useEffect(() => {
+    if (jitsiReady && !jitsiApi && sessionId && user?.user?.name) {
+      if (typeof window.JitsiMeetExternalAPI !== "undefined") {
+        handleJoin(sessionId, user.user.name);
+      } else {
+        const interval = setInterval(() => {
+          if (typeof window.JitsiMeetExternalAPI !== "undefined") {
+            clearInterval(interval);
+            handleJoin(sessionId, user.user.name);
+          }
+        }, 500);
 
-      return () => clearInterval(interval);
+        return () => clearInterval(interval);
+      }
     }
-  }
-}, [jitsiReady, sessionId, jitsiApi, user]);
-
+  }, [jitsiReady, sessionId, jitsiApi, user]);
 
   const handleJoin = (roomName: string, studentName: string) => {
     if (!window.JitsiMeetExternalAPI || !jitsiContainerRef.current) return;
 
-    const domain = "meet.mentxtv.com"; // ✅
+    const domain = "meet.mentxtv.com";
     const options = {
       roomName,
       parentNode: jitsiContainerRef.current,
@@ -555,32 +614,25 @@ useEffect(() => {
       setParticipants((prev) => prev.filter((user) => user.id !== p.id));
     });
 
-    api.addEventListener("incomingMessage", (event: any) => {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: event.from,
-          name: event.nick,
-          avatar: `https://avatar.vercel.sh/${event.from}.png`,
-          text: event.message,
-          isLocal: false,
-        },
-      ]);
-    });
-
     api.addEventListener("readyToClose", handleLeave);
   };
 
   const handleSendMessage = (text: string) => {
-    if (!jitsiApi) return;
-    const localParticipant = jitsiApi.getParticipantsInfo()[0];
-    jitsiApi.executeCommand("sendChatMessage", text);
+    if (!socketRef.current || !sessionId || !user?.user) return;
+
+    socketRef.current.emit("sendSessionMessage", {
+      sessionId,
+      message: text,
+      userId: user.user.id,
+      name: user.user.name,
+    });
+
     setMessages((prev) => [
       ...prev,
       {
-        id: localParticipant?.participantId || "local-user",
-        name: "Student",
-        avatar: `https://avatar.vercel.sh/student.png`,
+        id: user.user.id,
+        name: user.user.name,
+        avatar: `https://avatar.vercel.sh/${user.user.id}.png`,
         text,
         isLocal: true,
       },
@@ -588,7 +640,7 @@ useEffect(() => {
   };
 
   const handleLeave = () => {
-    navigate("/booking-sessions");
+    navigate("/feedback/" + sessionId);
   };
 
   const formatTime = (seconds: number) => {
@@ -604,14 +656,15 @@ useEffect(() => {
         <div className="lg:col-span-2 xl:col-span-3 h-full flex flex-col">
           <Card className="overflow-hidden shadow-2xl rounded-xl flex-grow flex flex-col">
             <CardContent className="p-0 bg-black flex-grow">
-              {/* 👇 The container for Jitsi iframe */}
               <div ref={jitsiContainerRef} className="w-full h-full" />
             </CardContent>
             <div className="bg-white dark:bg-gray-800 border-t dark:border-gray-700 p-3 flex items-center justify-between text-sm">
               <div className="flex items-center gap-6">
                 <div className="flex items-center gap-2">
                   <Users className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-semibold">{participants.length} Participants</span>
+                  <span className="font-semibold">
+                    {participants.length} Participants
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Timer className="h-4 w-4 text-muted-foreground" />
@@ -620,7 +673,8 @@ useEffect(() => {
               </div>
               <div className="text-muted-foreground">
                 <span>
-                  Session ID: <span className="font-semibold text-primary">{sessionId}</span>
+                  Session ID:{" "}
+                  <span className="font-semibold text-primary">{sessionId}</span>
                 </span>
               </div>
             </div>
@@ -644,3 +698,4 @@ useEffect(() => {
 };
 
 export default LiveSession;
+
