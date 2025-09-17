@@ -64,9 +64,12 @@ const MentorshipBenefits = () => {
             helps you?
           </h2>
           <p className="text-xl text-gray-600 max-w-4xl mx-auto">
-            Preparing for{" "}
-            <span className="font-semibold text-gray-900">NEET | IIT-JEE</span>{" "}
-            can be tough and we know students require guidance at every step.
+            We provide complete, end-to-end mentorship — from the very first step to final success.
+            <br />
+            Exams: Start → Selection | Careers: Beginner → Expert
+            {" "}
+            {/* <span className="font-semibold text-gray-900">NEET | IIT-JEE</span>{" "}
+            can be tough and we know students require guidance at every step. */}
           </p>
         </div>
 

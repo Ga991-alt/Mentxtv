@@ -78,7 +78,7 @@ const BecomeMentor = () => {
     {
       icon: FileText,
       title: "Register & Submit Documents",
-      description: "Fill the registration form to become a IIT-JEE | NEET mentor with all the correct information and submit the related documents with the registration form.",
+      description: "Fill the registration form to become a mentor with all the correct information and submit the related documents with the registration form.",
       image: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=300&h=200&fit=crop",
       step: "1"
     },
@@ -108,27 +108,27 @@ const BecomeMentor = () => {
   const benefits = [
     {
       icon: CheckCircle,
-      title: "Create an impact in the lives of IIT-JEE | NEET aspirants"
+      title: "Monetary Rewards – Earn income for every mentorship session and subscription you handle."
     },
     {
       icon: TrendingUp,
-      title: "Start earning along with your regular studies"
+      title: "Build Fame & Recognition – Get featured on MentxTV as an expert mentor and build your personal brand"
     },
     {
       icon: Award,
-      title: "Learn professional skills in a fast-growing startup"
+      title: "Expand Your Network – Connect with top students, other mentors, and industry experts."
     },
     {
       icon: Users2,
-      title: "Connect with a Community of IIT- JEE | NEET Mentors"
+      title: "Create Real Impact – Change lives by guiding students toward success."
     },
     {
       icon: FileText,
-      title: "Letter of recommendation to best mentors"
+      title: "Flexible Opportunities – Work from anywhere, choose your schedule."
     },
     {
       icon: Award,
-      title: "Become a Brand Ambassador of a growth- oriented company"
+      title: "Skill Development – Improve your communication, leadership, and teaching skills."
     }
   ];
 
@@ -142,10 +142,10 @@ const BecomeMentor = () => {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
               <h1 className="text-5xl lg:text-6xl font-bold mb-6">
-                Become a Mentor
+                Become a Mentor at MentxTV – Guide Students with Your Real Experience
               </h1>
               <p className="text-xl mb-8 opacity-90">
-                Be a light house for the IIT-JEE | NEET aspirants.
+                At MentxTV, only real achievers – those who have truly walked the path and know what it takes to succeed.
               </p>
               <Button 
                 size="lg"
@@ -179,10 +179,16 @@ const BecomeMentor = () => {
             </div>
             <div>
               <h2 className="text-4xl font-bold text-gray-900 mb-6">
-                Become a Mentor
+               Why Become a Mentor at MentxTV?
               </h2>
               <p className="text-lg text-gray-700 leading-relaxed">
-                Mentoring is an act that brings change in the lives of many and you can drive this change by becoming a IIT-JEE | NEET mentor at MentxTv. Young enthusiasts who have cleared their IIT-JEE | NEET exam recently with good scores are eligible to become a mentor at MentxTv and reap the many benefits that MentxTv's Mentorship Program offers.
+                <span className="font-bold">Impact Lives</span> – Help thousands of students achieve their dreams.
+                <br />
+                <span className="font-bold">Earn Rewards & Recognition</span> – Paid mentorship + exclusive perks.
+                <br />
+                <span className="font-bold">Build Your Brand</span> – Get featured as an expert mentor on our platform.
+                <br />
+                <span className="font-bold">Flexible & Remote</span> – Mentor from anywhere, anytime.
               </p>
               <Button 
                 size="lg"
@@ -241,7 +247,7 @@ const BecomeMentor = () => {
               Benefits of Becoming a <span className="text-blue-600">Mentor at MentxTv</span>
             </h2>
             <p className="text-xl text-gray-600">
-              Grow your network, learn life skills and find your passion with mentoring!
+              "Grow your network, earn recognition, and create impact – all while getting rewarded!"
             </p>
           </div>
 
