@@ -45,8 +45,9 @@ const MentorTeam = () => {
             Our Team of <span className="text-blue-600">Mentors</span>
           </h2>
           <p className="text-xl text-gray-600 max-w-4xl mx-auto">
-            To guide you through each step with their expertise and skills we connect you with expert mentors having proven 
-            success records in <span className="font-semibold text-gray-900">NEET | IIT-JEE</span> exams.
+            Not just teachers — Real Achievers.
+Every mentor on MentxTV is a proven performer who has cracked the toughest exams or excelled in their careers.
+{/* <span className="font-semibold text-gray-900">NEET | IIT-JEE</span> exams. */}
           </p>
         </div>
 

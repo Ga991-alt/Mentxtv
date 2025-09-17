@@ -13,7 +13,7 @@ const GetStarted = () => {
     },
     {
       icon: Calendar,
-      title: "2. Schedule a call",
+      title: "2. Book a session",
       description:
         "Book your one-on-one session with a Ranker — choose your time now!",
       color: "bg-blue-100 text-blue-600",

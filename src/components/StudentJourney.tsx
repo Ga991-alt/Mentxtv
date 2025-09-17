@@ -12,7 +12,7 @@ const StudentJourney = () => {
   const journeySteps = [
     {
       icon: FileText,
-      title: "Start with a Free Session from a Topper",
+      title: "Book a Free Intro Session – Experience real mentorship before you commit.",
       color: "bg-blue-100 text-blue-600",
     },
     {
@@ -27,17 +27,17 @@ const StudentJourney = () => {
     },
     {
       icon: GraduationCap,
-      title: "Evaluate Your Prep with Structured Mock Tests",
+      title: "Quizzes, Mock Tests & Analysis – Track progress and fix weak areas.",
       color: "bg-blue-100 text-blue-600",
     },
     {
       icon: GraduationCap,
-      title: "Crack NEET/JEE with Expert Guidance",
+      title: "Complete Guidance From Start to Success – From first day to final selection.",
       color: "bg-blue-100 text-blue-600",
     },
     {
       icon: ThumbsUp,
-      title: "Stay Connected with Your Mentor for Life",
+      title: "Lifetime Mentor Connection – Stay connected even after success.",
       color: "bg-blue-100 text-blue-600",
     },
   ];
