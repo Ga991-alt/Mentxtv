@@ -15,7 +15,7 @@ const StudentQuickActions = () => {
               Book New Session
             </Button>
           </Link>
-          <Button variant="outline">View All Sessions</Button>
+          {/* <Button variant="outline">View All Sessions</Button> */}
           <Link to="/student-dashboard-result">
             <Button variant="outline">My Exams</Button>
           </Link>

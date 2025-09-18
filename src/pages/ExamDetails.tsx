@@ -24,6 +24,7 @@ const ExamDetails = () => {
   const examDetails = {
     "IIT (JEE)": {
       title: "IIT JEE Exam Details",
+      link: "https://jeemain.nta.nic.in/",
       highlights: "JEE 2026 Highlights",
       description: "The Joint Entrance Examination (JEE) is India's largest engineering entrance examination for undergraduate B.Tech and B.Arch courses in top institutes like IITs, NITs, IIITs, and CFTIs. JEE is conducted in two phases: JEE Main (by NTA) and JEE Advanced (by a designated IIT on rotation each year).",
       overview: {
@@ -65,6 +66,7 @@ const ExamDetails = () => {
       ],
       advanced: {
         title: "JEE Advanced 2025 Overview",
+        
         description: "JEE Advanced is for students qualifying JEE Main and aiming for IIT admission. Structure and eligibility change slightly each year based on IIT organizing the exam (2025: IIT Kanpur).",
         examDates: [
           { activity: "Online Registration for JEE (Advanced) 2025", date: "April 23, 2025" },
@@ -79,6 +81,7 @@ const ExamDetails = () => {
     },
     "NEET": {
       title: "NEET Exam Details",
+      link: "https://neet.nta.nic.in/",
       highlights: "NEET 2026 Highlights",
       description: "The National Eligibility cum Entrance Test (NEET) is the single entrance examination for admission to MBBS, BDS, AYUSH and other medical courses in India. It is conducted by the National Testing Agency (NTA).",
       overview: {
@@ -105,6 +108,7 @@ const ExamDetails = () => {
     },
     "UPSC": {
       title: "UPSC Civil Services Exam Details",
+      link: "https://www.upsc.gov.in/",
       highlights: "UPSC CSE 2026 Highlights",
       description: "The Union Public Service Commission conducts the Civil Services Examination to recruit candidates for various Group A and Group B central services like IAS, IFS, IPS, and other allied services.",
       overview: {
@@ -131,6 +135,7 @@ const ExamDetails = () => {
     },
     "BITSAT": {
       title: "BITSAT Exam Details",
+      link: "https://www.bitsadmission.com/",
       highlights: "BITSAT 2026 Highlights",
       description: "Birla Institute of Technology and Science Admission Test (BITSAT) is conducted by BITS Pilani for admission to its campuses in Pilani, Goa, and Hyderabad for various undergraduate engineering programs.",
       overview: {
@@ -156,6 +161,7 @@ const ExamDetails = () => {
     },
     "GATE": {
       title: "GATE Exam Details",
+      link: "https://gate.iitkgp.ac.in/",
       highlights: "GATE 2026 Highlights",
       description: "Graduate Aptitude Test in Engineering (GATE) is conducted for admission to postgraduate programs in engineering, technology, and architecture, and for recruitment in PSUs.",
       overview: {
@@ -181,6 +187,7 @@ const ExamDetails = () => {
     },
     "CLAT": {
       title: "CLAT Exam Details",
+      link: "https://consortiumofnlus.ac.in/",
       highlights: "CLAT 2026 Highlights",
       description: "Common Law Admission Test (CLAT) is conducted for admission to undergraduate and postgraduate law programs in National Law Universities across India.",
       overview: {
@@ -206,6 +213,7 @@ const ExamDetails = () => {
     },
     "CA": {
       title: "CA Exam Details",
+      link: "https://www.icai.org/",
       highlights: "CA 2026 Highlights",
       description: "Chartered Accountancy is conducted by the Institute of Chartered Accountants of India (ICAI). It consists of three levels: Foundation, Intermediate, and Final.",
       overview: {
@@ -231,6 +239,7 @@ const ExamDetails = () => {
     },
     "NIFT": {
       title: "NIFT Exam Details",
+      link: "https://nift.ac.in/",
       highlights: "NIFT 2026 Highlights",
       description: "National Institute of Fashion Technology conducts entrance examination for admission to undergraduate and postgraduate programs in fashion and design.",
       overview: {
@@ -256,6 +265,7 @@ const ExamDetails = () => {
     },
     "CAT": {
       title: "CAT Exam Details",
+      link: "https://iimcat.ac.in/",
       highlights: "CAT 2026 Highlights",
       description: "Common Admission Test (CAT) is conducted for admission to MBA programs in IIMs and other top B-schools in India.",
       overview: {
@@ -324,6 +334,16 @@ const ExamDetails = () => {
           <div className="space-y-8">
             <div>
               <h1 className="text-4xl font-bold text-gray-900 mb-4">{currentExam.title}</h1>
+              {currentExam.link && (
+                <a
+                  href={currentExam.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block text-xl font-bold text-blue-700 hover:underline mb-6"
+                >
+                  Visit Official Website →
+                </a>
+              )}
               
               <div className="bg-blue-50 rounded-lg p-6 mb-8">
                 <h2 className="text-2xl font-bold text-blue-900 mb-4">{currentExam.highlights}</h2>
