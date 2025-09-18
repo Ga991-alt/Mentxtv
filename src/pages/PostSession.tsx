@@ -450,7 +450,7 @@ const PostSession = () => {
   duration: "",
   totalSlots: "",
   price: "",
-  type: "group" as "group" | "onetoone",
+  type: "group" ,
 });
 
 const mentorshipCategories = {
@@ -818,7 +818,7 @@ const mentorshipCategories = {
                 </Select>
               </div>
 
-              <div>
+              {/* <div>
                 <Label htmlFor="type">Session Type</Label>
                 <div className="flex gap-4 mt-2">
                   <div
@@ -862,7 +862,7 @@ const mentorshipCategories = {
                     </div>
                   </div>
                 </div>
-              </div>
+              </div> */}
 
               <div className="grid grid-cols-2 gap-4">
                 {sessionData.type === "group" ? (
