@@ -24,11 +24,11 @@ export default function Appointments() {
   const { mentorId } = useParams();
   const navigate = useNavigate();
   const mentor = {
-    id: "1",
-    name: "Dr. Aditi Sharma",
-    specialty: "Mathematics",
-    avatarUrl: "https://i.pravatar.cc/300?img=47",
-  };
+  id: mentorId || "",
+  name: "Mentor Name", // TODO: fetch real mentor data using mentorId
+  specialty: "Specialty",
+  avatarUrl: "https://i.pravatar.cc/300",
+};
 
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedSlot, setSelectedSlot] = useState<string>("");

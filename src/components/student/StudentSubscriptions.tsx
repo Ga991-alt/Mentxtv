@@ -136,6 +136,7 @@
 
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -168,6 +169,8 @@ const StudentSubscriptions = ({ userId }: { userId: string }) => {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const navigate = useNavigate();
 
   const baseURL = import.meta.env.VITE_API_BASE_URL;
 
@@ -284,8 +287,13 @@ const StudentSubscriptions = ({ userId }: { userId: string }) => {
                   </div>
 
                   <div className="flex gap-2 pt-1">
-                    <Button variant="outline" size="sm" className="flex-1 text-xs">
-                      View Details
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 text-xs"
+                      onClick={() => navigate(`/appointments/${mentor._id}`)}
+                    >
+                      Request Mentor
                     </Button>
                     <Button variant="outline" size="sm" className="flex-1 text-xs">
                       Manage Plan

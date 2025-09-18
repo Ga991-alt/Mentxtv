@@ -42,7 +42,7 @@ const StudentDashboard = () => {
         {user && <StudentSubscriptions userId={user.id} />}
         {/* Quick Actions */}
         <div className="mt-8">
-          <StudentQuickActions />
+          {/* <StudentQuickActions /> */}
         </div>
       </main>
     </div>
