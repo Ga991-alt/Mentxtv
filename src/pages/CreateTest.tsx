@@ -162,7 +162,6 @@ import { FaPlus, FaTrash } from "react-icons/fa";
 import { useUser } from "@/contexts/UserContext";
 
 const categories = [
-  { label: "All", value: "All" },
   { label: "JEE Main", value: "JEE Main" },
   { label: "JEE Advanced", value: "JEE Advanced" },
   { label: "NEET", value: "NEET" },
@@ -198,7 +197,7 @@ export default function MentorQuestionCreator() {
   const mentorId = user?.id;
 
   const [title, setTitle] = useState("");
-  const [category, setCategory] = useState("All");
+  const [category, setCategory] = useState("");
   const [questions, setQuestions] = useState([
     { question: "", options: ["", "", "", ""], correctIndex: null },
   ]);
@@ -260,6 +259,29 @@ export default function MentorQuestionCreator() {
       alert("Mentor ID not found. Please login again.");
       return;
     }
+    if (!category) {
+    alert("Please select a category before uploading.");
+    return;
+  }
+  for (let i = 0; i < normalized.length; i++) {
+    if (!normalized[i].question.trim()) {
+      alert(`Question ${i + 1} is empty. Please fill it in.`);
+      return;
+    }
+
+    // ✅ Check that all options are filled
+    const filledOptions = normalized[i].options.filter(opt => opt.trim() !== "");
+  if (filledOptions.length < 2) {
+    alert(`Question ${i + 1}: Please provide at least 2 options.`);
+    return;
+  }
+
+    // ✅ Check that a correct answer is chosen
+    if (!normalized[i].correctAnswer) {
+      alert(`Question ${i + 1}: Please select the correct answer.`);
+      return;
+    }
+  }
 
     const payload = {
       title,
@@ -326,8 +348,12 @@ export default function MentorQuestionCreator() {
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
+            required
             className="w-[95%] border-b border-gray-300 p-3 m-3 focus:ring-0 outline-none focus:bg-gray-50 focus:shadow-inner focus:rounded-md"
           >
+            <option value="" disabled>
+              Select the category
+            </option>
             {categories.map((cat) => (
               <option key={cat.value} value={cat.value}>
                 {cat.label}
