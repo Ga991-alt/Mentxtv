@@ -230,8 +230,31 @@ const requests = [
   });
 
   if (feedbackCount === 0) return 0; // No feedbacks at all
-  return totalFeedback / feedbackCount;
+  const averageFeedback = totalFeedback / feedbackCount;
+  return Number(averageFeedback.toFixed(2)); // rounds to 2 decimal places
+  // return roundedAverage;
 };
+
+  function subscribersCount(): React.ReactNode {
+    const [count, setCount] = useState<number>(0);
+
+    useEffect(() => {
+      const fetchSubscribers = async () => {
+        if (!user?.id) return;
+        try {
+          const res = await axios.get(
+            `${import.meta.env.VITE_API_BASE_URL}/api/subscriptions/mentor/${user.id}`
+          );
+          setCount(Array.isArray(res.data) ? res.data.length : 0);
+        } catch (err) {
+          setCount(0);
+        }
+      };
+      fetchSubscribers();
+    }, [user?.id]);
+
+    return count;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -290,12 +313,12 @@ const requests = [
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-gray-600">
-                Active Students
+                Subscribers Count 
               </CardTitle>
               <Users className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">156</div>
+              <div className="text-3xl font-bold">{subscribersCount()}</div>
             </CardContent>
           </Card>
           <Card>

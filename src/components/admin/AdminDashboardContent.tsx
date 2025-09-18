@@ -403,6 +403,8 @@ import TestManagement from "@/components/admin/TestManagement";
 import { dashboardStats, mentors, students, sessionData, payments } from "@/data/adminMockData";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import SubscriptionManagement from "./SubscriptionManagement";
+import FeedbackManagement from "./FeedbackManagement";
 
 interface Payment {
   id: string;
@@ -918,6 +920,29 @@ useEffect(() => {
     <TestManagement />
   </>
 )}
+
+{
+  activeTab === 'subscribe' && (
+    <>
+      <div className="mb-8">
+        <h2 className="text-3xl font-bold text-gray-900 mb-2">Subscription Management</h2>
+        <p className="text-gray-600">Manage subscription plans and user subscriptions.</p>
+      </div>
+      <SubscriptionManagement/>
+    </>
+  )
+}
+
+{
+  activeTab === 'feedback' && (
+    <>
+      <div className="mb-8">
+        <h2 className="text-3xl font-bold text-gray-900 mb-2">Feedback Management</h2>
+        <p className="text-gray-600">Manage testimonials and feedback from students and mentors.</p>
+      </div>
+      <FeedbackManagement/>
+      </>)
+}
 
 
     </main>

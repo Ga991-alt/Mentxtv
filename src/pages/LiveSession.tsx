@@ -470,7 +470,7 @@ const ChatBox = ({
 const LiveSession = () => {
   const navigate = useNavigate();
   const { sessionId } = useParams();
-  const user = useUser();
+  const {user , loading} = useUser();
   const jitsiContainerRef = useRef<HTMLDivElement | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -482,6 +482,13 @@ const LiveSession = () => {
 
   // ✅ WebSocket setup
   const socketRef = useRef<any>(null);
+
+    // Redirect to login if user does not exist
+    useEffect(() => {
+  if (!loading && !user) {
+    navigate("/login");
+  }
+}, [loading, user, navigate]);
   useEffect(() => {
     // WebSocket setup
 const SOCKET_URL =  "https://mentxtv.com"
@@ -491,17 +498,17 @@ socketRef.current = io(SOCKET_URL, {
 });
 
 
-    if (sessionId && user?.user?.id) {
+    if (sessionId && user?.id) {
       socketRef.current.emit("joinSession", {
         sessionId,
-        userId: user.user.id,
+        userId: user.id,
       });
     }
 
     socketRef.current.on(
       "receiveSessionMessage",
       ({ message, userId, name }) => {
-        if(userId===user?.user?.id) return; // Ignore own messages
+        if(userId===user?.id) return; // Ignore own messages
         setMessages((prev) => [
           ...prev,
           {
@@ -516,10 +523,10 @@ socketRef.current = io(SOCKET_URL, {
     );
 
     return () => {
-      if (sessionId && user?.user?.id) {
+      if (sessionId && user?.id) {
         socketRef.current.emit("leaveSession", {
           sessionId,
-          userId: user.user.id,
+          userId: user.id,
         });
       }
       socketRef.current.disconnect();
@@ -548,14 +555,14 @@ socketRef.current = io(SOCKET_URL, {
 
   // Init Jitsi
   useEffect(() => {
-    if (jitsiReady && !jitsiApi && sessionId && user?.user?.name) {
+    if (jitsiReady && !jitsiApi && sessionId && user?.name) {
       if (typeof window.JitsiMeetExternalAPI !== "undefined") {
-        handleJoin(sessionId, user.user.name);
+        handleJoin(sessionId, user.name);
       } else {
         const interval = setInterval(() => {
           if (typeof window.JitsiMeetExternalAPI !== "undefined") {
             clearInterval(interval);
-            handleJoin(sessionId, user.user.name);
+            handleJoin(sessionId, user.name);
           }
         }, 500);
 
@@ -618,21 +625,21 @@ socketRef.current = io(SOCKET_URL, {
   };
 
   const handleSendMessage = (text: string) => {
-    if (!socketRef.current || !sessionId || !user?.user) return;
+    if (!socketRef.current || !sessionId || !user) return;
 
     socketRef.current.emit("sendSessionMessage", {
       sessionId,
       message: text,
-      userId: user.user.id,
-      name: user.user.name,
+      userId: user.id,
+      name: user.name,
     });
 
     setMessages((prev) => [
       ...prev,
       {
-        id: user.user.id,
-        name: user.user.name,
-        avatar: `https://avatar.vercel.sh/${user.user.id}.png`,
+        id: user.id,
+        name: user.name,
+        avatar: `https://avatar.vercel.sh/${user.id}.png`,
         text,
         isLocal: true,
       },
