@@ -203,6 +203,7 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { TrendingUp, Clock, Calendar, Eye, Target } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
+import { useNavigate } from "react-router-dom";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -210,9 +211,11 @@ const StudentTestResults = () => {
   const [studentResults, setStudentResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useUser();
-  const studentId = user.id // example: "688cbd40607ac02366c8e172"
+   const studentId = user?.id; // example: "688cbd40607ac02366c8e172"
 
+  const navigate = useNavigate();
   useEffect(() => {
+    if (!studentId) return;//charan i changed here
     const fetchTests = async () => {
       try {
         setLoading(true);
@@ -232,6 +235,8 @@ const StudentTestResults = () => {
                 subject: test.subject || "N/A", // if subject is missing
                 difficulty: test.difficulty || "Medium", // fallback
                 totalQuestions: test.questions.length,
+                questions: test.questions,//charan i have changed this line
+                  
                 ...result, // includes examDate, percentage, timeTaken, correct, wrong
               });
             }
@@ -389,10 +394,31 @@ const StudentTestResults = () => {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Button variant="outline" size="sm" className="flex items-center gap-1">
-                      <Eye size={14} />
-                      View Details
-                    </Button>
+                    {/* charan below i have made changes this button*/}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-1"
+                    onClick={() =>
+                      navigate("/test-result", {
+                        state: {
+                          test: {
+                            _id: r.testId,
+                            title: r.testName,
+                            category: r.category,
+                            difficulty: r.difficulty,
+                            questions: r.questions || [], // include actual questions if you have them
+                          },
+                          selectedAnswers: r.selectedAnswers || [],
+                          timeTaken: r.timeTaken,
+                        },
+                      })
+                    }
+                  >
+                    <Eye size={14} />
+                    View Details
+                  </Button>
+
                   </TableCell>
                 </TableRow>
               ))}

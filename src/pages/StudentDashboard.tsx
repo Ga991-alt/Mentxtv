@@ -37,8 +37,9 @@ const StudentDashboard = () => {
         
         {/* <StudentMentors/> */}
 
-        <StudentTestResults />
-        <StudentSubscriptions userId= {user.id}/>
+        <StudentTestResults />{/* charan  i changed here */}
+        {/* <StudentSubscriptions userId= {user.id}/> */}
+        {user && <StudentSubscriptions userId={user.id} />}
         {/* Quick Actions */}
         <div className="mt-8">
           <StudentQuickActions />
