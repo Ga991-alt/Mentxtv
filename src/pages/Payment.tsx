@@ -355,14 +355,12 @@
 
 
 
-
-
-import { useLocation, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, Users, Star } from "lucide-react";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "sonner";
 import { useUser } from "@/contexts/UserContext";
@@ -379,10 +377,11 @@ const loadRazorpay = (src: string) => {
 };
 
 const Payment = () => {
-  // const { state: session } = useLocation();
   const user = useUser();
   const { sessionId } = useParams();
   const [session, setSession] = useState<any>(null);
+  const [paymentComplete, setPaymentComplete] = useState(false);
+
   useEffect(() => {
     const fetchSession = async () => {
       try {
@@ -395,6 +394,7 @@ const Payment = () => {
     };
     fetchSession();
   }, [sessionId]);
+
   if (!session) {
     return (
       <div className="min-h-screen flex items-center justify-center text-red-600">
@@ -403,38 +403,86 @@ const Payment = () => {
     );
   }
 
+  const completePayment = async (razorpayPaymentId: string) => {
+  try {
+    const baseURL = `${import.meta.env.VITE_API_BASE_URL}/api`;
+    const studentEmail = user.user?.email;
+    if (!studentEmail) return toast.error("User email not found.");
+
+    // 1. Fetch student data
+    const studentRes = await axios.get(`${baseURL}/students/${studentEmail}`);
+    const studentData = studentRes.data;
+
+    // 2. Fetch latest session data
+    const sessionRes = await axios.get(`${baseURL}/sessions/${sessionId}`);
+    const sessionData = sessionRes.data;
+
+    if (sessionData.availableSlots <= 0) {
+      return toast.error("No slots left for this session.");
+    }
+
+    // 3. Create payment record according to PaymentSchema
+    const paymentRes = await axios.post(`${baseURL}/payments`, {
+      orderId: "", // optionally generate from backend
+      paymentId: razorpayPaymentId, // Razorpay transaction ID
+      amount: sessionData.price,
+      status: "paid",
+      studentId: studentData._id,
+      sessionId: sessionData._id,
+      timestamp: new Date(),
+    });
+
+    const payment = paymentRes.data;
+
+    // 4. Update student record
+    await axios.put(`${baseURL}/students/${studentData._id}`, {
+      ...studentData,
+      payments: [...(studentData.payments || []), payment._id],
+      enrolledSessions: [...(studentData.enrolledSessions || []), sessionData._id],
+      totalSpent: (studentData.totalSpent || 0) + sessionData.price,
+    });
+
+    // 5. Update session record
+    await axios.put(`${baseURL}/sessions/${sessionData._id}`, {
+      ...sessionData,
+      availableSlots: sessionData.availableSlots - 1,
+      bookedStudents: [...(sessionData.bookedStudents || []), studentData._id],
+      updatedAt: new Date(),
+    });
+
+    setPaymentComplete(true);
+    toast.success("Payment successful! Booking confirmed.");
+  } catch (error: any) {
+    console.error("Payment error:", error);
+    toast.error(error?.response?.data?.message || error.message || "Payment failed.");
+  }
+};
+
+
   const openRazorpay = async () => {
     const res = await loadRazorpay("https://checkout.razorpay.com/v1/checkout.js");
-
     if (!res) {
       alert("Razorpay SDK failed to load. Check your connection.");
       return;
     }
 
     const options = {
-  key: import.meta.env.VITE_RAZORPAY_KEY_ID, // Live key ID
-  amount: session.price * 100,
-  currency: "INR",
-  name: "MentorX",
-  description: session.title,
-  handler: function (response: any) {
-    alert(`✅ Payment successful!\nPayment ID: ${response.razorpay_payment_id}`);
-    console.log("response is :",response);
-    // Later: call backend API to verify payment here
-  },
-  prefill: {
-    name: user.user?.name || "Test User",
-    email: user.user?.email || "test@example.com",
-    contact: user.user?.phone || "9999999999",
-  },
-  notes: {
-    session: session.title,
-  },
-  theme: {
-    color: "#121826",
-  },
-};
-
+      key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+      amount: session.price * 100,
+      currency: "INR",
+      name: "MentorX",
+      description: session.title,
+      handler: function (response: any) {
+        completePayment(response.razorpay_payment_id);
+      },
+      prefill: {
+        name: user.user?.name || "Test User",
+        email: user.user?.email || "test@example.com",
+        contact: user.user?.phone || "9999999999",
+      },
+      notes: { session: session.title },
+      theme: { color: "#121826" },
+    };
 
     const rzp = new (window as any).Razorpay(options);
     rzp.open();
@@ -449,7 +497,6 @@ const Payment = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Title + Slots */}
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-medium">{session.title}</h3>
             <Badge
@@ -460,13 +507,11 @@ const Payment = () => {
             </Badge>
           </div>
 
-          {/* Instructor */}
           <p className="text-gray-700 flex items-center gap-2">
             by {session.mentor}
             <Star className="h-4 w-4 text-yellow-400 fill-current" />
           </p>
 
-          {/* Date & Time */}
           <div className="space-y-2 text-sm text-gray-600">
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
@@ -484,32 +529,18 @@ const Payment = () => {
             </div>
           </div>
 
-          {/* Price */}
           <div className="border-t pt-4 flex justify-between items-center">
             <span className="text-lg font-semibold">Total Amount:</span>
             <span className="text-2xl font-bold">₹{session.price}</span>
           </div>
 
-          {/* Continue Button */}
           <Button
             onClick={openRazorpay}
             className="w-full bg-[#121826] hover:bg-[#1a2230]"
+            disabled={paymentComplete}
           >
-            Continue
+            {paymentComplete ? "Payment Completed" : "Continue"}
           </Button>
-
-          {/* Payment Info */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h4 className="font-semibold text-blue-900 mb-2">
-              Payment Information
-            </h4>
-            <ul className="text-sm text-blue-800 space-y-1">
-              <li>• Secure payment processing</li>
-              <li>• Instant booking confirmation</li>
-              <li>• 24/7 customer support</li>
-              <li>• Refund available up to 24 hours before session</li>
-            </ul>
-          </div>
         </CardContent>
       </Card>
     </div>
