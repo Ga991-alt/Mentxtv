@@ -343,13 +343,61 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useUser } from "@/contexts/UserContext";
+import axios from "axios";
 
 const SubscriptionPayment = () => {
   const { user } = useUser();
   const location = useLocation();
   const subscription = location.state as any;
 
+
+
   const [paymentComplete, setPaymentComplete] = useState(false);
+
+
+  // import axios from "axios";
+
+const handleContinue = async (razorpayPaymentId: string) => {
+  try {
+    const baseURL = `${import.meta.env.VITE_API_BASE_URL}/api`;
+    const studentEmail = user?.email;
+    if (!studentEmail) return toast.error("User email not found.");
+
+    // 1. Fetch student data
+    const studentRes = await axios.get(`${baseURL}/students/${studentEmail}`);
+    const studentData = studentRes.data;
+
+    // 2. Create subscription with Razorpay proof
+
+    console.log("data to post is :", {
+      studentId: user.id,
+      mentorId: subscription.mentorId,
+      plan: subscription.plan,
+      amount: subscription.amount,
+      startDate: subscription.startDate,
+      endDate: subscription.endDate,
+      razorpayPaymentId
+    });
+    await axios.post(`${baseURL}/subscriptions/`, {
+      studentId: user.id,
+      mentorId: subscription.mentorId,
+      plan: subscription.plan,
+      amount: subscription.amount,
+      startDate: subscription.startDate,
+      endDate: subscription.endDate,
+      proof: razorpayPaymentId, // ✅ Razorpay ID instead of Cloudinary URL
+      status: "active",         // since payment succeeded
+    });
+
+    setPaymentComplete(true);
+    toast.success("Subscription activated successfully!");
+  } catch (err: any) {
+    console.error(err);
+    toast.error(
+      err?.response?.data?.message || "Failed to process subscription payment."
+    );
+  }
+};
 
   if (!subscription) {
     return (
@@ -363,20 +411,25 @@ const SubscriptionPayment = () => {
   const openRazorpay = () => {
     const options: any = {
       key: import.meta.env.VITE_RAZORPAY_KEY_ID, // put your Razorpay key in .env
-      amount: subscription.amount * 100, // in paisa
+      amount:  100, // in paisa
       currency: "INR",
       name: "MentorX",
       description: subscription.plan,
       image: "/logo.png", // optional: your logo
       handler: function (response: any) {
-        setPaymentComplete(true);
-        toast.success("Payment successful! ID: " + response.razorpay_payment_id);
-        localStorage.setItem("payment_status", "success");
-        localStorage.setItem("payment_id", response.razorpay_payment_id);
-      },
+  setPaymentComplete(true);
+  handleContinue(response.razorpay_payment_id); // Pass Razorpay payment ID to backend
+  toast.success("Payment successful! ID: " + response.razorpay_payment_id);
+
+  // 👉 Add Razorpay proof directly to subscription
+  subscription.proof = response.razorpay_payment_id;
+
+  localStorage.setItem("payment_status", "success");
+  localStorage.setItem("payment_id", response.razorpay_payment_id);
+},
       prefill: {
         email: user?.email || "test@example.com",
-        contact: "9876543210",
+        contact: user?.phone,
       },
       theme: {
         color: "#121826",
@@ -403,7 +456,7 @@ const SubscriptionPayment = () => {
             </p>
             <div className="bg-gray-50 p-4 rounded-lg space-y-2">
               <h3 className="font-semibold">Plan: {subscription.plan}</h3>
-              <p className="text-sm text-gray-600">Mentor: {subscription.mentorId}</p>
+              <p className="text-sm text-gray-600">Mentor: {subscription.mentorName}</p>
               <div className="flex items-center justify-between text-sm">
                 <span>
                   Start: {new Date(subscription.startDate).toLocaleDateString()}
@@ -413,6 +466,9 @@ const SubscriptionPayment = () => {
                 </span>
               </div>
               <div className="text-lg font-bold">₹{subscription.amount}</div>
+              <div className="text-xs text-gray-500 break-all">
+    Proof (Razorpay ID): {subscription.proof}
+  </div>
             </div>
             <Link to="/student-dashboard">
               <Button className="w-full">Go to Dashboard</Button>
@@ -432,7 +488,7 @@ const SubscriptionPayment = () => {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <h3 className="font-semibold text-lg">Plan: {subscription.plan}</h3>
-            <p className="text-gray-600">Mentor: {subscription.mentorId}</p>
+            <p className="text-gray-600">Mentor: {subscription.mentorName}</p>
             <div className="flex items-center gap-1">
               <Star className="h-4 w-4 text-yellow-400 fill-current" />
               <span className="text-sm font-medium">N/A</span>

@@ -90,12 +90,13 @@ const SubscribePlans = () => {
     endDate.setMonth(today.getMonth() + plan.months);
 
     const payload = {
-      mentorId:mentor.userId.name,
+      mentorId:mentor._id,
       studentId: user.id,
       plan: plan.title,
       startDate: today.toISOString(),
       endDate: endDate.toISOString(),
       amount: plan.price,
+      mentorName: mentor.userId.name,
     };
 
     console.log("Subscription Payload:", payload);
