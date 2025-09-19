@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,78 +11,84 @@ import { Label } from "@/components/ui/label";
 import { Plus, Edit, Trash2 } from "lucide-react";
 
 interface Feedback {
-  id: string;
+  _id?: string; // coming from MongoDB
   name: string;
   role: string;
   testimonial: string;
-  type: 'student' | 'mentor';
+  type: "student" | "mentor";
 }
 
 const FeedbackManagement = () => {
-  const [feedbacks, setFeedbacks] = useState<Feedback[]>([
-    {
-      id: "1",
-      name: "Nilkamal",
-      role: "NEET Aspirant",
-      testimonial: "Main Nilkamal Baidya, Student of MentxTv, mera mentor name Akansha, mera first class ka chuka hai. My mentor advises and guides me all the time.",
-      type: "student"
-    },
-    {
-      id: "2",
-      name: "Dr. Akansha Verma",
-      role: "NEET Mentor",
-      testimonial: "Being a mentor at MentxTv has been incredibly rewarding. Helping students achieve their dreams and seeing their progress gives me immense satisfaction.",
-      type: "mentor"
-    }
-  ]);
-
+  const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingFeedback, setEditingFeedback] = useState<Feedback | null>(null);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<Feedback>({
     name: "",
     role: "",
     testimonial: "",
-    type: "student" as 'student' | 'mentor'
+    type: "student",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (editingFeedback) {
-      // Update existing feedback
-      setFeedbacks(feedbacks.map(feedback => 
-        feedback.id === editingFeedback.id 
-          ? { ...feedback, ...formData }
-          : feedback
-      ));
-    } else {
-      // Add new feedback
-      const newFeedback: Feedback = {
-        id: Date.now().toString(),
-        ...formData
-      };
-      setFeedbacks([...feedbacks, newFeedback]);
-    }
+  const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
-    // Reset form and close dialog
-    setFormData({ name: "", role: "", testimonial: "", type: "student" });
-    setEditingFeedback(null);
-    setIsDialogOpen(false);
+  // Fetch feedbacks
+  const fetchFeedbacks = async () => {
+    try {
+      const res = await axios.get(`${API_BASE}/api/feedbacks`);
+      setFeedbacks(res.data);
+    } catch (error) {
+      console.error("Error fetching feedbacks:", error);
+    }
   };
 
+  useEffect(() => {
+    fetchFeedbacks();
+  }, []);
+
+  // Add / Update feedback
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (editingFeedback && editingFeedback._id) {
+        // Update
+        const res = await axios.put(`${API_BASE}/api/feedbacks/${editingFeedback._id}`, formData);
+        setFeedbacks(feedbacks.map(f => (f._id === editingFeedback._id ? res.data : f)));
+      } else {
+        // Create
+        const res = await axios.post(`${API_BASE}/api/feedbacks`, formData);
+        setFeedbacks([res.data, ...feedbacks]);
+      }
+
+      // Reset form
+      setFormData({ name: "", role: "", testimonial: "", type: "student" });
+      setEditingFeedback(null);
+      setIsDialogOpen(false);
+    } catch (error) {
+      console.error("Error saving feedback:", error);
+    }
+  };
+
+  // Edit
   const handleEdit = (feedback: Feedback) => {
     setFormData({
       name: feedback.name,
       role: feedback.role,
       testimonial: feedback.testimonial,
-      type: feedback.type
+      type: feedback.type,
     });
     setEditingFeedback(feedback);
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    setFeedbacks(feedbacks.filter(feedback => feedback.id !== id));
+  // Delete
+  const handleDelete = async (id?: string) => {
+    if (!id) return;
+    try {
+      await axios.delete(`${API_BASE}/api/feedbacks/${id}`);
+      setFeedbacks(feedbacks.filter(f => f._id !== id));
+    } catch (error) {
+      console.error("Error deleting feedback:", error);
+    }
   };
 
   const resetForm = () => {
@@ -93,10 +100,13 @@ const FeedbackManagement = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Feedback Management</h2>
-        <Dialog open={isDialogOpen} onOpenChange={(open) => {
-          setIsDialogOpen(open);
-          if (!open) resetForm();
-        }}>
+        <Dialog
+          open={isDialogOpen}
+          onOpenChange={(open) => {
+            setIsDialogOpen(open);
+            if (!open) resetForm();
+          }}
+        >
           <DialogTrigger asChild>
             <Button className="bg-blue-600 text-white">
               <Plus size={16} className="mr-2" />
@@ -105,9 +115,7 @@ const FeedbackManagement = () => {
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>
-                {editingFeedback ? "Edit Feedback" : "Add New Feedback"}
-              </DialogTitle>
+              <DialogTitle>{editingFeedback ? "Edit Feedback" : "Add New Feedback"}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
@@ -123,7 +131,12 @@ const FeedbackManagement = () => {
                 </div>
                 <div>
                   <Label htmlFor="type">Type</Label>
-                  <Select value={formData.type} onValueChange={(value: 'student' | 'mentor') => setFormData({ ...formData, type: value })}>
+                  <Select
+                    value={formData.type}
+                    onValueChange={(value: "student" | "mentor") =>
+                      setFormData({ ...formData, type: value })
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
@@ -156,11 +169,7 @@ const FeedbackManagement = () => {
                 />
               </div>
               <div className="flex justify-end gap-2">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => setIsDialogOpen(false)}
-                >
+                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                   Cancel
                 </Button>
                 <Button type="submit" className="bg-blue-600 text-white">
@@ -190,15 +199,17 @@ const FeedbackManagement = () => {
             </TableHeader>
             <TableBody>
               {feedbacks.map((feedback) => (
-                <TableRow key={feedback.id}>
+                <TableRow key={feedback._id}>
                   <TableCell className="font-medium">{feedback.name}</TableCell>
                   <TableCell>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      feedback.type === 'student' 
-                        ? 'bg-blue-100 text-blue-800' 
-                        : 'bg-green-100 text-green-800'
-                    }`}>
-                      {feedback.type === 'student' ? 'Student' : 'Mentor'}
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        feedback.type === "student"
+                          ? "bg-blue-100 text-blue-800"
+                          : "bg-green-100 text-green-800"
+                      }`}
+                    >
+                      {feedback.type === "student" ? "Student" : "Mentor"}
                     </span>
                   </TableCell>
                   <TableCell>{feedback.role}</TableCell>
@@ -207,17 +218,13 @@ const FeedbackManagement = () => {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleEdit(feedback)}
-                      >
+                      <Button variant="outline" size="sm" onClick={() => handleEdit(feedback)}>
                         <Edit size={14} />
                       </Button>
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
-                        onClick={() => handleDelete(feedback.id)}
+                        onClick={() => handleDelete(feedback._id)}
                         className="text-red-600 hover:text-red-700"
                       >
                         <Trash2 size={14} />
