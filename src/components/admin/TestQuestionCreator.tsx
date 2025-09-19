@@ -423,7 +423,44 @@ const handleAddQuestion = async () => {
     toast.success("Question deleted successfully!");
   };
 
-  const handleUploadToPortal = async () => {
+  // const handleUploadToPortal = async () => {
+  //   try {
+  //     await axios.put(`${baseurl}/api/admintest/${testId}`);
+  //     toast.success("Test uploaded! Students can now access it.");
+  //   } catch (err) {
+  //     toast.error("Failed to upload test");
+  //   }
+  // };
+  //charan i have changes here 
+    const handleUploadToPortal = async () => {
+    // ✅ Validation before upload
+    if (questions.length < 2) {
+      toast.error("Please add at least 2 questions before uploading.");
+      return;
+    }
+
+    for (const [index, q] of questions.entries()) {
+      // Check question text
+      if (!q.question.trim()) {
+        toast.error(`Question ${index + 1} is empty.`);
+        return;
+      }
+
+      // Check at least 2 filled options
+      const filledOptions = q.options.filter((opt) => opt.trim() !== "");
+      if (filledOptions.length < 2) {
+        toast.error(`Question ${index + 1} must have at least 2 options.`);
+        return;
+      }
+
+      // Check correct answer selected
+      if (q.correctAnswer === -1 || !q.options[q.correctAnswer]?.trim()) {
+        toast.error(`Please select a valid correct answer for Question ${index + 1}.`);
+        return;
+      }
+    }
+
+    // ✅ If all validations pass, upload
     try {
       await axios.put(`${baseurl}/api/admintest/${testId}`);
       toast.success("Test uploaded! Students can now access it.");
@@ -431,6 +468,7 @@ const handleAddQuestion = async () => {
       toast.error("Failed to upload test");
     }
   };
+
 
   return (
     <div className="space-y-6">
