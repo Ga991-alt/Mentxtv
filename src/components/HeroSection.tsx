@@ -11,13 +11,13 @@ const HeroSection = () => {
           <div className="space-y-8">
             <div>
               <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
-                India's Largest Community of{" "}
-                <span className="text-blue-600">Mentors & Toppers</span>
+                <span></span>Indian Largest Mentorship Platform For {" "}
+                <span className="text-blue-600">Every Exam Every Sector</span>
               </h1>
               <p className="text-xl text-gray-600 mt-6 leading-relaxed">
-                Crack your preparations with guidance from the best.
-                MentxTv brings to you a community of{" "}
-                <span className="font-semibold text-gray-900">NEET | IIT-JEE</span> toppers!
+                <span className="font-semibold text-gray-900">" Real Mentors , Real Guidance , Real Success "</span>
+                . MentxTv brings to you a community of Toppers{" "}
+                {/* <span className="font-semibold text-gray-900">NEET | IIT-JEE</span> toppers! */}
               </p>
             </div>
 

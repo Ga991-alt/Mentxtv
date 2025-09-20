@@ -116,7 +116,7 @@ const Navigation = () => {
                   href="/mentors"
                   className="text-gray-700 block px-3 py-2 text-base font-medium"
                 >
-                  Our mentors
+                  1-on-1 Mentorship ✨
                 </a>
                 {/* <a
                   href="/exam-page"

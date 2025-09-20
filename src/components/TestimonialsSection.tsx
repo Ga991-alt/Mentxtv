@@ -56,15 +56,13 @@ const TestimonialsSection = () => {
         <div className="text-center mb-16">
           <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
             <span className="text-blue-600">
-              Real Stories. Real Impact. Discover Their Experience.
+              See What People are Saying About Us!
             </span>
           </h2>
           <p className="text-xl text-gray-600 max-w-4xl mx-auto mb-8">
-            Our mission is to guide{" "}
-            <span className="font-semibold text-gray-900">NEET & JEE</span>{" "}
-            aspirants with expert strategies while connecting toppers with
-            impactful mentorship roles. But the real stories come from our
-            students and mentors themselves.
+            <span className="font-semibold text-gray-900">Real Stories. Real Impact. Discover Their Experience.</span>
+            "Real stories from students and achievers who experienced MentxTV mentorship."
+
           </p>
 
           {/* Tab Buttons */}
