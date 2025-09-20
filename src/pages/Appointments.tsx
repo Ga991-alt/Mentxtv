@@ -1,12 +1,14 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { CheckCircle } from "lucide-react";
 import Calendar from "@/components/Calender"; // custom calendar
-import { Navigator } from "react-router-dom";
+import { useUser } from "@/contexts/UserContext";
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 // Generate slots 9 AM → 10 PM
 const generateTimeSlots = () => {
@@ -23,100 +25,188 @@ const timeSlots = generateTimeSlots();
 export default function Appointments() {
   const { mentorId } = useParams();
   const navigate = useNavigate();
-  const mentor = {
-  id: mentorId || "",
-  name: "Mentor Name", // TODO: fetch real mentor data using mentorId
-  specialty: "Specialty",
-  avatarUrl: "https://i.pravatar.cc/300",
-};
+  const { user } = useUser();
 
-  const [selectedDate, setSelectedDate] = useState<string>("");
+  const [mentor, setMentor] = useState<any | null>(null);
+  const [appointments, setAppointments] = useState<any[]>([]);
+  const [selectedDate, setSelectedDate] = useState<string>(
+    new Date().toISOString().split("T")[0] // default to today
+  );
   const [selectedSlot, setSelectedSlot] = useState<string>("");
 
-  // Modal states
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isConfirmed, setIsConfirmed] = useState(false);
 
-  const handleBook = () => {
-    if (!selectedDate || !selectedSlot) return;
+  // Fetch mentor details
+  useEffect(() => {
+    if (!mentorId) return;
+
+    const fetchMentor = async () => {
+      try {
+        const { data } = await axios.get(`${API_BASE}/api/mentors/${mentorId}`);
+        console.log("fetched data is :", data)
+        setMentor(data);
+      } catch (err: any) {
+        console.error(err);
+      }
+    };
+
+    fetchMentor();
+  }, [mentorId]);
+
+  // Fetch mentor appointments
+  useEffect(() => {
+  if (!mentorId) return;
+
+  const fetchAppointments = async () => {
+    try {
+      const { data } = await axios.get(`${API_BASE}/api/appointments/mentors/${mentor._id}`);
+      setAppointments(data);
+    } catch (err: any) {
+      console.error(err);
+    }
+  };
+
+  fetchAppointments();
+  console.log(appointments)
+}, [mentorId, selectedDate]);
+
+
+  // Book appointment
+  const handleBook = async () => {
+    if (!selectedDate || !selectedSlot || !mentorId) return;
 
     setIsDialogOpen(true);
     setIsLoading(true);
 
-    // simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const studentId = user.id;
+
+      const { data } = await axios.post(
+        `${API_BASE}/api/appointments`,
+        { mentorId: mentor._id, studentId, date: selectedDate, timeSlot: selectedSlot },
+        { headers: { "Content-Type": "application/json" } }
+      );
+
       setIsConfirmed(true);
-    }, 1500);
+      // Refresh appointments after booking
+      const { data: updated } = await axios.get(`${API_BASE}/api/appointments/${mentorId}`);
+      setAppointments(updated);
+    } catch (err: any) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  // Determine slot status
+  const getSlotStatus = (slot: string) => {
+  const app = appointments.find(
+    (a) => a.date === selectedDate && a.timeSlot === slot
+  );
+  if (app?.status === "pending") return "pending"; // orange
+  if (app?.status === "accepted") return "booked"; // gray
+
+  // Disable past slots if selected date is today
+  const now = new Date();
+  const todayStr = now.toISOString().split("T")[0];
+  if (selectedDate === todayStr) {
+    const slotHour = parseInt(slot.split(":")[0], 10);
+    const slotAMPM = slot.split(" ")[1];
+    const slot24 =
+      slotAMPM === "PM" && slotHour !== 12
+        ? slotHour + 12
+        : slotAMPM === "AM" && slotHour === 12
+        ? 0
+        : slotHour;
+    if (slot24 <= now.getHours()) return "past"; // mark as past
+  }
+
+  return "available"; // green
+};
+
 
   return (
     <>
       <Card className="max-w-6xl mx-auto mt-8 p-8 rounded-2xl shadow-lg">
-<div className="flex justify-between  mb-6">
-        <CardHeader className="mb-6">
-          <h2 className="text-2xl font-semibold text-gray-800">
-            Book Appointment with {mentor.name}
-          </h2>
-          <p className="text-sm text-gray-500">{mentor.specialty}</p>
-        </CardHeader>
-        <CardHeader className="w-fit"><Button className="" onClick={()=>{navigate('/student-dashboard')}}>Go back</Button></CardHeader></div>
+        <div className="flex justify-between mb-6 flex-wrap">
+          <CardHeader className="mb-6">
+            <h2 className="text-2xl font-semibold text-gray-800">
+              {mentor ? `Book Appointment with ${mentor.userId?.name}` : "Loading..."}
+            </h2>
+            <p className="text-sm text-gray-500">{mentor?.specialty || "Specialty"}</p>
+          </CardHeader>
+          <CardHeader className="w-fit">
+            <Button onClick={() => navigate("/student-dashboard")}>Go back</Button>
+          </CardHeader>
+        </div>
+
         <CardContent>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Left: Calendar */}
+            {/* Calendar */}
             <div>
               <h3 className="font-medium mb-3 text-gray-700">Select Date:</h3>
               <Calendar selectedDate={selectedDate} onSelect={setSelectedDate} />
             </div>
 
-            {/* Right: Slots */}
+            {/* Slots */}
             <div>
               <h3 className="font-medium mb-3 text-gray-700">
                 {selectedDate
-                  ? `Available Slots on ${new Date(selectedDate).toLocaleDateString(
-                      "en-US",
-                      { weekday: "long", month: "short", day: "numeric" }
-                    )}`
+                  ? `Available Slots on ${new Date(selectedDate).toLocaleDateString("en-US", {
+                      weekday: "long",
+                      month: "short",
+                      day: "numeric",
+                    })}`
                   : "Select a date to view available slots"}
               </h3>
 
               {selectedDate ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {timeSlots.map((slot) => {
-                    const isAvailable = true;
-                    const isSelected = selectedSlot === slot;
+  const status = getSlotStatus(slot);
+  const isSelected = selectedSlot === slot;
+  let bg = "", text = "", cursor = "cursor-pointer";
 
-                    return (
-                      <div
-                        key={slot}
-                        onClick={() => isAvailable && setSelectedSlot(slot)}
-                        className={`cursor-pointer rounded-lg px-4 py-2 text-center border transition 
-                          ${
-                            isAvailable
-                              ? isSelected
-                                ? "border-green-600 bg-green-50 text-green-700 font-semibold"
-                                : "border-green-500 text-green-600 hover:bg-green-50"
-                              : "border-gray-300 text-gray-400 cursor-not-allowed"
-                          }
-                        `}
-                      >
-                        {slot}
-                      </div>
-                    );
-                  })}
+  switch (status) {
+    case "available":
+      bg = isSelected ? "bg-green-50" : "bg-white";
+      text = isSelected ? "text-green-700 font-semibold" : "text-green-600";
+      break;
+    case "pending":
+      bg = isSelected ? "bg-orange-100" : "bg-white";
+      text = isSelected ? "text-orange-700 font-semibold" : "text-orange-600";
+      break;
+    case "booked":
+    case "past":
+      bg = "bg-gray-200";
+      text = "text-gray-400 cursor-not-allowed";
+      cursor = "cursor-not-allowed";
+      break;
+  }
+
+  return (
+    <div
+      key={slot}
+      onClick={() => status === "available" && setSelectedSlot(slot)}
+      className={`rounded-lg px-4 py-2 text-center border transition ${bg} ${text} ${cursor}`}
+    >
+      {slot}
+    </div>
+  );
+})}
+
                 </div>
               ) : (
-                <p className="text-gray-500 text-sm">
-                  Please select a date from the calendar.
-                </p>
+                <p className="text-gray-500 text-sm">Please select a date from the calendar.</p>
               )}
 
-              {/* Book Button */}
+              {/* Confirm button */}
               <Button
                 className="mt-6 w-full rounded-lg py-3 text-lg"
                 onClick={handleBook}
-                disabled={!selectedDate || !selectedSlot}
+                disabled={!selectedDate || !selectedSlot || getSlotStatus(selectedSlot) === "booked"}
               >
                 Confirm Booking
               </Button>
@@ -125,9 +215,12 @@ export default function Appointments() {
         </CardContent>
       </Card>
 
-      {/* Modal */}
+      {/* Confirmation Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="flex flex-col items-center justify-center p-8 rounded-2xl">
+          <DialogTitle className="sr-only">Booking Confirmation</DialogTitle>
+          <DialogDescription className="sr-only">Shows the confirmation status of your appointment</DialogDescription>
+
           {isLoading ? (
             <>
               <div className="w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full animate-spin mb-4"></div>
@@ -136,11 +229,9 @@ export default function Appointments() {
           ) : isConfirmed ? (
             <>
               <CheckCircle className="w-16 h-16 text-green-600 mb-4" />
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                Appointment Confirmed!
-              </h3>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">Appointment Confirmed!</h3>
               <p className="text-gray-600 mb-6 text-center">
-                Your session with {mentor.name} on{" "}
+                Your session with {mentor?.userId?.name} on{" "}
                 {new Date(selectedDate).toLocaleDateString("en-US", {
                   weekday: "long",
                   month: "short",
@@ -148,10 +239,7 @@ export default function Appointments() {
                 })}{" "}
                 at {selectedSlot} is confirmed.
               </p>
-              <Button
-                className="px-6 py-2 rounded-lg"
-                onClick={() => setIsDialogOpen(false)}
-              >
+              <Button className="px-6 py-2 rounded-lg" onClick={() => setIsDialogOpen(false)}>
                 Done
               </Button>
             </>

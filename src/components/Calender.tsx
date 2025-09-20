@@ -51,14 +51,16 @@ export default function Calendar({
   };
 
   const handleSelect = (day: number) => {
-    const date = new Date(year, month, day);
-    date.setHours(0, 0, 0, 0);
+  const date = new Date(year, month, day);
 
-    if (date < today || date > subscriptionEnd) return; // block outside valid range
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
 
-    const dateStr = date.toISOString().split("T")[0];
-    onSelect(dateStr);
-  };
+  const dateStr = `${yyyy}-${mm}-${dd}`; // local date string
+  onSelect(dateStr);
+};
+
 
   const selected = selectedDate ? new Date(selectedDate) : null;
 
@@ -116,7 +118,9 @@ export default function Calendar({
           const date = new Date(year, month, day);
           date.setHours(0, 0, 0, 0);
 
-          const dateStr = date.toISOString().split("T")[0];
+          // const dateStr = date.toISOString().split("T")[0];
+          const dateStr = date.toLocaleDateString("en-CA"); // "YYYY-MM-DD" format
+
           const isSelected =
             selected?.toDateString() === new Date(dateStr).toDateString();
           const isToday = today.toDateString() === date.toDateString();

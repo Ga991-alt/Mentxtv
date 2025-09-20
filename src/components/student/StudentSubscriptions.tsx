@@ -133,16 +133,14 @@
 // export default StudentSubscriptions;
 
 
-
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Calendar, Star, Clock } from "lucide-react";
+import { Calendar, Star, Clock, Video } from "lucide-react";
 
 interface Subscription {
   _id: string;
@@ -159,38 +157,51 @@ interface Subscription {
   };
   plan: string;
   endDate: string;
-  status: string;
+  status: string; // active, expired, etc.
   amount: number;
   createdAt: string;
 }
 
+interface Appointment {
+  _id: string;
+  mentorId: {
+    _id: string;
+  };
+  studentId: string;
+  status: "pending" | "accepted" | "rejected";
+}
+
 const StudentSubscriptions = ({ userId }: { userId: string }) => {
-  console.log(userId)
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const navigate = useNavigate();
-
   const baseURL = import.meta.env.VITE_API_BASE_URL;
 
   useEffect(() => {
     if (!userId) return;
-    const fetchSubscriptions = async () => {
+
+    const fetchData = async () => {
+      setLoading(true);
       try {
-        setLoading(true);
-        const res = await axios.get(`${baseURL}/api/subscriptions/student//${userId}`);
-        setSubscriptions(res.data || []);
-        console.log("Fetched subscriptions:", res.data);
+        // Fetch subscriptions
+        const subRes = await axios.get(`${baseURL}/api/subscriptions/student/${userId}`);
+        setSubscriptions(subRes.data || []);
+
+        // Fetch student appointments
+        const appRes = await axios.get(`${baseURL}/api/appointments/students/${userId}`);
+        setAppointments(appRes.data || []);
       } catch (err) {
-        console.error("Failed to fetch subscriptions", err);
-        setError("Unable to load subscriptions.");
+        console.error("Failed to fetch data", err);
+        setError("Unable to load subscriptions or appointments.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchSubscriptions();
+    fetchData();
   }, [userId, baseURL]);
 
   const renderStars = (rating: number = 0) =>
@@ -201,6 +212,25 @@ const StudentSubscriptions = ({ userId }: { userId: string }) => {
         className={i < Math.floor(rating) ? "text-yellow-400 fill-current" : "text-gray-300"}
       />
     ));
+
+  const handleDeleteSession = async (appointmentId: string) => {
+  try {
+    await axios.delete(`${baseURL}/api/appointments/${appointmentId}`);
+    // Remove from local appointments state
+    setAppointments(appointments.filter((app) => app._id !== appointmentId));
+  } catch (err) {
+    console.error("Failed to delete session", err);
+  }
+};
+
+
+  const getSessionStatus = (mentorId: string) => {
+    console.log("Checking session status for mentorId:", mentorId, appointments);
+    const app = appointments.find((a) => a.mentorId._id === mentorId);
+    if (!app) return "none";
+    console.log("Found appointment:", app);
+    return app.status;
+  };
 
   if (loading) return <p>Loading subscriptions...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
@@ -227,6 +257,57 @@ const StudentSubscriptions = ({ userId }: { userId: string }) => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {subscriptions.map((subscription) => {
             const mentor = subscription.mentorId;
+            const sessionStatus = getSessionStatus(mentor._id);
+
+            const renderSessionButton = () => {
+              switch (sessionStatus) {
+                case "pending":
+                  return (
+                    <Button variant="outline" size="sm" className="flex-1 text-xs cursor-not-allowed">
+                      Request Pending
+                    </Button>
+                  );
+                case "accepted":
+                  return (
+                    <Button
+                      variant="default"
+                      size="sm"
+                      className="flex-1 text-xs flex items-center justify-center gap-1"
+                      onClick={() => navigate(`/student-sessions/${mentor._id}`)}
+                    >
+                      <Video size={14} /> Join
+                    </Button>
+                  );
+                case "rejected":
+                  return (
+                    <Button
+  variant="destructive"
+  size="sm"
+  className="flex-1 text-xs"
+  onClick={() => {
+    console.log("Deleting rejected session for mentorId:", mentor._id);
+    const app = appointments.find((a) => a.mentorId._id === mentor._id && a.status === "rejected");
+    if (app) handleDeleteSession(app._id);
+    navigate(`/appointments/${mentor.userId?.email}`);
+  }}
+>
+  Book Another Session
+</Button>
+                  );
+                default:
+                  return (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 text-xs"
+                      onClick={() => navigate(`/appointments/${mentor.userId?.email}`)}
+                    >
+                      Request Mentor
+                    </Button>
+                  );
+              }
+            };
+
             return (
               <Card key={subscription._id} className="hover:shadow-md transition-shadow text-sm">
                 <CardHeader className="pb-2">
@@ -258,9 +339,7 @@ const StudentSubscriptions = ({ userId }: { userId: string }) => {
                 </CardHeader>
                 <CardContent className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-foreground">
-                      {subscription.plan} Plan
-                    </span>
+                    <span className="text-xs font-medium text-foreground">{subscription.plan} Plan</span>
                     <Badge
                       variant={subscription.status === "active" ? "default" : "destructive"}
                       className="text-[10px]"
@@ -272,9 +351,7 @@ const StudentSubscriptions = ({ userId }: { userId: string }) => {
                   <div className="space-y-1 text-xs text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <Calendar size={12} />
-                      <span>
-                        Started: {new Date(subscription.createdAt).toLocaleDateString()}
-                      </span>
+                      <span>Started: {new Date(subscription.createdAt).toLocaleDateString()}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Clock size={12} />
@@ -286,19 +363,7 @@ const StudentSubscriptions = ({ userId }: { userId: string }) => {
                     </div>
                   </div>
 
-                  <div className="flex gap-2 pt-1">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 text-xs"
-                      onClick={() => navigate(`/appointments/${mentor._id}`)}
-                    >
-                      Request Mentor
-                    </Button>
-                    <Button variant="outline" size="sm" className="flex-1 text-xs">
-                      Manage Plan
-                    </Button>
-                  </div>
+                  <div className="flex gap-2 pt-1">{renderSessionButton()}</div>
                 </CardContent>
               </Card>
             );

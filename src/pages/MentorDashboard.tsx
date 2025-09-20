@@ -20,6 +20,7 @@ import { useUser } from "@/contexts/UserContext";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "@/firebaseConfig"; // make sure your firebase.js exports storage
 // import axios from "axios";
+import OneToOneSessions from "@/components/mentor/one-on-one";
 const MentorDashboard = () => {
   const [mentorImage, setMentorImage] = useState<string | null>(null);
   const [isZoomed, setIsZoomed] = useState(false);
@@ -27,42 +28,42 @@ const MentorDashboard = () => {
   const [mentorData, setMentorData] = useState<any>(null);
   const [activeTab, setActiveTab] = useState("upcoming");
 
-  const sessions = [
-{
-id: 1,
-student: "Aarav Mehta",
-time: "2025-08-24T17:30:00",
-profilePic: "https://randomuser.me/api/portraits/men/32.jpg",
-},
-{
-id: 2,
-student: "Riya Sharma",
-time: "2025-08-24T19:00:00",
-profilePic: "https://randomuser.me/api/portraits/women/44.jpg",
-},
-{
-id: 3,
-student: "Kabir Patel",
-time: "2025-08-25T10:00:00",
-profilePic: "https://randomuser.me/api/portraits/men/76.jpg",
-},
-];
+//   const sessions = [
+// {
+// id: 1,
+// student: "Aarav Mehta",
+// time: "2025-08-24T17:30:00",
+// profilePic: "https://randomuser.me/api/portraits/men/32.jpg",
+// },
+// {
+// id: 2,
+// student: "Riya Sharma",
+// time: "2025-08-24T19:00:00",
+// profilePic: "https://randomuser.me/api/portraits/women/44.jpg",
+// },
+// {
+// id: 3,
+// student: "Kabir Patel",
+// time: "2025-08-25T10:00:00",
+// profilePic: "https://randomuser.me/api/portraits/men/76.jpg",
+// },
+// ];
 
 
-const requests = [
-    {
-      id: 1,
-      student: "Rahul Sharma",
-      profilePic: "",
-      requestedAt: "2025-08-22T15:00:00",
-    },
-    {
-      id: 2,
-      student: "Priya Mehta",
-      profilePic: "",
-      requestedAt: "2025-08-23T12:30:00",
-    },
-  ];
+// const requests = [
+//     {
+//       id: 1,
+//       student: "Rahul Sharma",
+//       profilePic: "",
+//       requestedAt: "2025-08-22T15:00:00",
+//     },
+//     {
+//       id: 2,
+//       student: "Priya Mehta",
+//       profilePic: "",
+//       requestedAt: "2025-08-23T12:30:00",
+//     },
+//   ];
 
 
   useEffect(() => {
@@ -438,7 +439,7 @@ const requests = [
                     </Button>
                   </Link>
                 </CardContent>
-              </Card>
+        </Card>
           </div>
 
           {/* Right column: Posted Sessions */}
@@ -553,130 +554,7 @@ const requests = [
           
         </div>
 
-        <Card className="shadow-lg rounded-2xl border p-2 mt-8">
-      <CardHeader className="text-xl font-semibold flex items-center justify-between gap-2 ">
-        <div className="flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-blue-500" />
-          <div>One-to-One Sessions</div>
-        </div>
-
-        {/* Toggle Buttons */}
-        <div className="flex gap-2 text-sm font-medium bg-gray-100 p-1 rounded-full">
-          <button
-            className={`px-6 py-1 rounded-full transition ${
-              activeTab === "requests"
-                ? "bg-blue-500 text-white shadow"
-                : "text-gray-600"
-            }`}
-            onClick={() => setActiveTab("requests")}
-          >
-            Requests
-          </button>
-          <button
-            className={`px-6 py-1 rounded-full transition ${
-              activeTab === "upcoming"
-                ? "bg-blue-500 text-white shadow"
-                : "text-gray-600"
-            }`}
-            onClick={() => setActiveTab("upcoming")}
-          >
-            Upcoming
-          </button>
-        </div>
-      </CardHeader>
-
-      <CardContent>
-        <div className="space-y-4">
-          {activeTab === "upcoming"
-            ? sessions.map((session, i) => (
-                <motion.div
-                  key={session.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                  className="flex items-center justify-between bg-gray-50 rounded-xl p-3 shadow-sm hover:shadow-md hover:scale-105 transition"
-                >
-                  {/* Student Profile */}
-                  <div className="flex items-center gap-3">
-                    <Avatar>
-                      <AvatarImage src={session.profilePic} />
-                      <AvatarFallback>
-                        {session.student.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-medium text-gray-800">
-                        {session.student}
-                      </p>
-                      <div className="flex items-center text-sm text-gray-500 gap-1">
-                        <Clock className="w-4 h-4" />
-                        {new Date(session.time).toLocaleString("en-IN", {
-                          dateStyle: "medium",
-                          timeStyle: "short",
-                        })}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Join Button */}
-                  <Button size="sm" className="rounded-full flex gap-1">
-                    <Video className="w-4 h-4" /> Join
-                  </Button>
-                </motion.div>
-              ))
-            : requests.map((req, i) => (
-                <motion.div
-                  key={req.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                  className="flex items-center justify-between bg-gray-50 rounded-xl p-3 shadow-sm hover:shadow-md hover:scale-105 transition"
-                >
-                  {/* Student Profile */}
-                  <div className="flex items-center gap-3">
-                    <Avatar>
-                      <AvatarImage src={req.profilePic} />
-                      <AvatarFallback>
-                        {req.student.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-medium text-gray-800">
-                        {req.student}
-                      </p>
-                      <div className="flex items-center text-sm text-gray-500 gap-1">
-                        <Clock className="w-4 h-4" />
-                        Requested on{" "}
-                        {new Date(req.requestedAt).toLocaleString("en-IN", {
-                          dateStyle: "medium",
-                          timeStyle: "short",
-                        })}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Accept/Reject Buttons */}
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="rounded-full text-green-600 border-green-500"
-                    >
-                      Accept
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="rounded-full text-red-600 border-red-500"
-                    >
-                      Reject
-                    </Button>
-                  </div>
-                </motion.div>
-              ))}
-        </div>
-      </CardContent>
-    </Card>
+        <OneToOneSessions  />
       </main>
 
       {/* Zoomed Image Overlay */}
