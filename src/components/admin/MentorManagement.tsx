@@ -1,18 +1,39 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '@/firebaseConfig';
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/firebaseConfig";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Eye, Edit, Trash2, Star } from "lucide-react";
-import emailjs from '@emailjs/browser';
+import emailjs from "@emailjs/browser";
+
 interface Mentor {
   id: string;
   email: string;
@@ -28,7 +49,8 @@ interface MentorFormData {
   phone: string;
   bio: string;
   subjects: string[];
-  domain: string;
+  mainCategory: string; // added main category
+  domain: string; // subcategory
   education: string;
   expertise: string[];
 }
@@ -36,6 +58,108 @@ interface MentorFormData {
 interface MentorManagementProps {
   mentors: Mentor[];
 }
+
+// Category mapping
+const mentorshipCategories: Record<string, string[]> = {
+  "School & Academic": [
+    "Primary & Secondary (Class 1–10)",
+    "Higher Secondary (Class 11–12)",
+    "Olympiads & NTSE",
+    "Board Exam Preparation",
+    "Subject-Specific Mentoring (Math, Science, English, etc.)",
+  ],
+  "Competitive Exams": [
+    "JEE Preparation",
+    "NEET Preparation",
+    "UPSC / Civil Services",
+    "SSC / Banking / Railways",
+    "CAT / MBA Entrance",
+    "GATE / GRE / GMAT",
+    "NDA / CDS (Defence)",
+  ],
+  "Engineering & Tech": [
+    "Mechanical Engineering",
+    "Electrical & Electronics",
+    "Civil Engineering",
+    "Computer Science & IT",
+    "Chemical Engineering",
+    "Robotics & Automation",
+    "Aerospace Engineering",
+  ],
+  "Medical & Healthcare": [
+    "MBBS Preparation",
+    "Nursing Careers",
+    "Pharmacy & Paramedical",
+    "Dentistry",
+    "Allied Health Sciences",
+    "Overseas Medical Licensing (USMLE, PLAB, etc.)",
+  ],
+  "Management & Finance": [
+    "Chartered Accountancy (CA)",
+    "Company Secretary (CS)",
+    "Cost & Management Accounting (CMA)",
+    "MBA Specializations",
+    "Stock Market & Investment",
+    "Financial Analysis & Consulting",
+  ],
+  "Study Abroad": [
+    "US / Canada Admissions",
+    "UK / Europe Admissions",
+    "Australia / NZ Admissions",
+    "Scholarships & Funding Guidance",
+    "Visa & Application Guidance",
+    "Language Tests (IELTS, TOEFL, PTE)",
+  ],
+  "Creative & Media": [
+    "Design (Graphic, Product, UI/UX)",
+    "Photography & Videography",
+    "Film & Acting",
+    "Writing & Journalism",
+    "Fine Arts & Animation",
+    "Music & Performing Arts",
+  ],
+  "Government & PSU Jobs": [
+    "UPSC Mentorship",
+    "SSC / Railway Exams",
+    "Banking (IBPS, SBI, RBI)",
+    "Defence & Paramilitary",
+    "Public Sector Undertakings (GAIL, ONGC, BHEL, etc.)",
+  ],
+  Entrepreneurship: [
+    "Startup Mentorship",
+    "Business Strategy",
+    "Funding & Pitching",
+    "Product Development",
+    "Marketing & Growth Hacking",
+    "Leadership & Team Building",
+  ],
+  "IT & Digital Skills": [
+    "Software Development",
+    "Data Science & AI",
+    "Cybersecurity",
+    "Cloud Computing & DevOps",
+    "Web & App Development",
+    "Blockchain & Web3",
+    "Digital Marketing",
+    "Computer Science",
+  ],
+  "Personality & Life Skills": [
+    "Public Speaking & Communication",
+    "Soft Skills & Confidence Building",
+    "Career Counselling",
+    "Time Management & Productivity",
+    "Mindfulness & Stress Management",
+    "Leadership & Teamwork",
+  ],
+  "Law & Misc Careers": [
+    "Law Entrance Exams (CLAT, LSAT)",
+    "Judiciary Preparation",
+    "Corporate Law Careers",
+    "NGO & Social Work",
+    "Education & Teaching",
+    "Other Niche Career Guidance",
+  ],
+};
 
 const MentorManagement = ({ mentors }: MentorManagementProps) => {
   const navigate = useNavigate();
@@ -46,24 +170,30 @@ const MentorManagement = ({ mentors }: MentorManagementProps) => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedMentorId, setSelectedMentorId] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-
+  
   const [formData, setFormData] = useState<MentorFormData>({
     userEmail: "",
     bio: "",
     subjects: [],
     education: "",
     expertise: [],
+    mainCategory: "",
     domain: "",
     name: "",
-  phone: "",
+    phone: "",
   });
+
 
   const renderStars = (rating: number) =>
     Array.from({ length: 5 }, (_, i) => (
       <Star
         key={i}
         size={16}
-        className={i < Math.floor(rating) ? "text-yellow-400 fill-current" : "text-gray-300"}
+        className={
+          i < Math.floor(rating)
+            ? "text-yellow-400 fill-current"
+            : "text-gray-300"
+        }
       />
     ));
 
@@ -78,147 +208,149 @@ const MentorManagement = ({ mentors }: MentorManagementProps) => {
   };
 
   const handleEditMentor = async (email: string) => {
-  try {
-    const res = await axios.get(`${baseURL}/api/mentors/${email}`);
-    const data = res.data;
-
-    setFormData({
-      userEmail: data.userId.email,
-      name: data.userId.name || "",
-      phone: data.userId.phone || "",
-      bio: data.bio,
-      education: data.education,
-      domain: data.domain,
-      expertise: data.expertise || [],
-      subjects: data.subjects || [],
-    });
-
-    setSelectedMentorId(data._id);
-    setIsEditing(true);
-    setEditDialogOpen(true);
-  } catch (err) {
-    console.error("Failed to fetch mentor details", err);
-  }
-};
-
-
-const handleSubmit = async () => {
-  try {
-    let userId = null;
-
-    // 1. Try to fetch user by email
     try {
-      const userRes = await axios.get(`${baseURL}/api/users/${formData.userEmail}`);
-      userId = userRes.data?._id;
-    } catch (fetchErr) {
-      if (fetchErr.response?.status === 404) {
-        // User doesn't exist, create Firebase Auth user
-        const randomPassword = generateRandomPassword();
+      const res = await axios.get(`${baseURL}/api/mentors/${email}`);
+      const data = res.data;
 
-        try {
-          const firebaseUser = await createUserWithEmailAndPassword(
-            auth,
-            formData.userEmail,
-            randomPassword
-          );
+      setFormData({
+        userEmail: data.userId.email,
+        name: data.userId.name || "",
+        phone: data.userId.phone || "",
+        bio: data.bio,
+        education: data.education,
+        mainCategory: data.category || "",
+        domain: data.domain || "",
+        expertise: data.expertise || [],
+        subjects: data.subjects || [],
+      });
 
-          // Then create user in your DB
-          const newUserPayload = {
-            name: formData.name,
-            email: formData.userEmail,
-            phone: formData.phone,
-            role: "mentor",
-          };
+      setSelectedMentorId(data._id);
+      setIsEditing(true);
+      setEditDialogOpen(true);
+    } catch (err) {
+      console.error("Failed to fetch mentor details", err);
+    }
+  };
 
-          const createUserRes = await axios.post(`${baseURL}/api/users`, newUserPayload);
-          userId = createUserRes.data._id;
+  const handleSubmit = async () => {
+    try {
+      let userId = null;
 
-          // Send password email
-          console.log(formData.userEmail, formData.name , randomPassword)
-          await sendMentorEmail (formData.userEmail, formData.name , randomPassword);
+      // 1. Try to fetch user by email
+      try {
+        const userRes = await axios.get(
+          `${baseURL}/api/users/${formData.userEmail}`
+        );
+        userId = userRes.data?._id;
+      } catch (fetchErr) {
+        if (fetchErr.response?.status === 404) {
+          const randomPassword = generateRandomPassword();
 
-        } catch (firebaseErr) {
-          console.error("Firebase user creation failed:", firebaseErr);
-          return;
+          try {
+            await createUserWithEmailAndPassword(
+              auth,
+              formData.userEmail,
+              randomPassword
+            );
+
+            const newUserPayload = {
+              name: formData.name,
+              email: formData.userEmail,
+              phone: formData.phone,
+              role: "mentor",
+            };
+
+            const createUserRes = await axios.post(
+              `${baseURL}/api/users`,
+              newUserPayload
+            );
+            userId = createUserRes.data._id;
+
+            await sendMentorEmail(
+              formData.userEmail,
+              formData.name,
+              randomPassword
+            );
+          } catch (firebaseErr) {
+            console.error("Firebase user creation failed:", firebaseErr);
+            return;
+          }
+        } else {
+          throw fetchErr;
         }
-      } else {
-        throw fetchErr;
       }
+
+      if (!userId) {
+        console.error("User ID could not be resolved.");
+        return;
+      }
+
+      // 2. Create or update mentor
+      const payload = {
+        ...formData,
+        userId,
+        category: formData.mainCategory,
+      };
+      delete payload.userEmail;
+      delete payload.phone;
+      delete payload.name;
+
+      if (isEditing && selectedMentorId) {
+        await axios.put(`${baseURL}/api/mentors/${selectedMentorId}`, payload);
+        setEditDialogOpen(false);
+      } else {
+        await axios.post(`${baseURL}/api/mentors`, payload);
+        setOpen(false);
+      }
+
+      // Reset form
+      setFormData({
+        userEmail: "",
+        name: "",
+        phone: "",
+        bio: "",
+        subjects: [],
+        education: "",
+        expertise: [],
+        mainCategory: "",
+        domain: "",
+      });
+      setIsEditing(false);
+    } catch (err) {
+      console.error("Failed to submit mentor data", err);
     }
+  };
 
-    if (!userId) {
-      console.error("User ID could not be resolved.");
-      return;
+  const generateRandomPassword = () => {
+    const chars =
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+    return Array.from(
+      { length: 10 },
+      () => chars[Math.floor(Math.random() * chars.length)]
+    ).join("");
+  };
+
+  const sendMentorEmail = async (
+    userEmail: string,
+    userName: string,
+    tempPassword: string
+  ) => {
+    try {
+      await emailjs.send(
+        "service_wlgurti",
+        "template_lwdamtv",
+        {
+          email: userEmail,
+          user_name: userName,
+          temp_password: tempPassword,
+          reply_to: "charanrajb282004@gmail.com",
+        },
+        "cNuVIkw2p653gZ8dX"
+      );
+    } catch (error) {
+      console.error("Failed to send email:", error);
     }
-
-    // 2. Create or update mentor
-    const payload = {
-      ...formData,
-      userId,
-    };
-    delete payload.userEmail;
-    delete payload.phone;
-    delete payload.name;
-
-    if (isEditing && selectedMentorId) {
-      console.log("editing")
-      const result = await axios.put(`${baseURL}/api/mentors/${selectedMentorId}`, payload);
-      console.log("updated",payload)
-      console.log("result",result)
-      setEditDialogOpen(false);
-    } else {
-      await axios.post(`${baseURL}/api/mentors`, payload);
-      setOpen(false);
-    }
-
-    // Reset
-    setFormData({
-      userEmail: "",
-      name: "",
-      phone: "",
-      bio: "",
-      subjects: [],
-      education: "",
-      expertise: [],
-      domain: "",
-    });
-
-    setIsEditing(false);
-  } catch (err) {
-    console.error("Failed to submit mentor data", err);
-  }
-};
-
-
-
-const generateRandomPassword = () => {
-  const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
-  return Array.from({ length: 10 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
-};
-
-
-
-
-const sendMentorEmail = async (userEmail, userName, tempPassword) => {
-  try {
-    const response = await emailjs.send(
-      'service_wlgurti',        
-      'template_lwdamtv',       
-      {
-        email: userEmail,       
-        user_name: userName,    
-        temp_password: tempPassword,  
-        reply_to: 'charanrajb282004@gmail.com',
-      },
-      'cNuVIkw2p653gZ8dX'         // e.g. bxhLqRJZsLXgP4...
-    );
-
-    console.log('Email sent successfully:', response.status, response.text);
-  } catch (error) {
-    console.error('Failed to send email:', error);
-  }
-};
-
+  };
 
   return (
     <div className="space-y-6">
@@ -226,18 +358,6 @@ const sendMentorEmail = async (userEmail, userName, tempPassword) => {
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">
           <h2 className="text-2xl font-bold">Mentor Details</h2>
-          <Select defaultValue="all">
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="All Domains" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Domains</SelectItem>
-              <SelectItem value="jee">JEE</SelectItem>
-              <SelectItem value="neet">NEET</SelectItem>
-              <SelectItem value="upsc">UPSC</SelectItem>
-              <SelectItem value="gate">GATE</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
@@ -246,17 +366,26 @@ const sendMentorEmail = async (userEmail, userName, tempPassword) => {
               Add New Mentor
             </Button>
           </DialogTrigger>
+
           <DialogContent className="max-w-lg">
             <DialogHeader>
               <DialogTitle>Add New Mentor</DialogTitle>
             </DialogHeader>
-            <MentorForm formData={formData} setFormData={setFormData} isEditing={false} />
-            <Button onClick={handleSubmit} className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+            <MentorForm
+              formData={formData}
+              setFormData={setFormData}
+              isEditing={false}
+            />
+            <Button
+              onClick={handleSubmit}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+            >
               Submit
             </Button>
           </DialogContent>
         </Dialog>
       </div>
+      
 
       {/* Table */}
       <Card>
@@ -264,35 +393,43 @@ const sendMentorEmail = async (userEmail, userName, tempPassword) => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Mentor Name</TableHead>
-                <TableHead>Mentor ID</TableHead>
-                <TableHead>Domain</TableHead>
-                <TableHead>Rating</TableHead>
-                <TableHead>Sessions</TableHead>
-                <TableHead>Actions</TableHead>
+                <TableHead className="text-center">Mentor Name</TableHead>
+                <TableHead className="text-center">Mentor ID</TableHead>
+                <TableHead className="text-center">Domain</TableHead>
+                <TableHead className="text-center">Rating</TableHead>
+                <TableHead className="text-center">Sessions</TableHead>
+                <TableHead className="text-center">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {mentors.map((mentor) => (
                 <TableRow key={mentor.id}>
-                  <TableCell>{mentor.name}</TableCell>
-                  <TableCell>{mentor.id}</TableCell>
+                  <TableCell >{mentor.name}</TableCell>
+                  <TableCell className="text-center">{mentor.id}</TableCell>
                   <TableCell>
-                    <Badge variant="outline">{mentor.domain}</Badge>
+                    <Badge variant="outline" >{mentor.domain}</Badge>
                   </TableCell>
-                  <TableCell>
+                  <TableCell >
                     <div className="flex items-center gap-2">
                       <div className="flex">{renderStars(mentor.rating)}</div>
                       <span className="text-sm">({mentor.rating})</span>
                     </div>
-                  </TableCell>
-                  <TableCell>{mentor.sessions}</TableCell>
+                  </TableCell >
+                  <TableCell className="text-center">{mentor.sessions}</TableCell>
                   <TableCell>
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={() => navigate(`/view-mentor/${mentor.email}`)}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigate(`/view-mentor/${mentor.email}`)}
+                      >
                         <Eye size={14} />
                       </Button>
-                      <Button variant="outline" size="sm" onClick={() => handleEditMentor(mentor.email)}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEditMentor(mentor.email)}
+                      >
                         <Edit size={14} />
                       </Button>
                       <Button
@@ -305,7 +442,15 @@ const sendMentorEmail = async (userEmail, userName, tempPassword) => {
                         }}
                       >
                         <Trash2 size={14} />
+
                       </Button>
+
+                      <Button
+        className="flex items-center gap-2 bg-white hover:bg-gray-900 hover:text-white text-black border ml-auto"
+        onClick={() => navigate(`/handle-subscription/${mentor.id}`)}
+      >
+        Handle Subscription
+      </Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -322,7 +467,10 @@ const sendMentorEmail = async (userEmail, userName, tempPassword) => {
             <DialogTitle>Edit Mentor</DialogTitle>
           </DialogHeader>
           <MentorForm formData={formData} setFormData={setFormData} isEditing />
-          <Button onClick={handleSubmit} className="w-full bg-green-600 hover:bg-green-700 text-white">
+          <Button
+            onClick={handleSubmit}
+            className="w-full bg-green-600 hover:bg-green-700 text-white"
+          >
             Update
           </Button>
         </DialogContent>
@@ -332,88 +480,29 @@ const sendMentorEmail = async (userEmail, userName, tempPassword) => {
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Are you sure you want to delete this mentor?</DialogTitle>
+            <DialogTitle>
+              Are you sure you want to delete this mentor?
+            </DialogTitle>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-            <Button className="bg-red-600 text-white" onClick={handleDeleteMentor}>Confirm Delete</Button>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="bg-red-600 text-white"
+              onClick={handleDeleteMentor}
+            >
+              Confirm Delete
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
   );
 };
-
-// const MentorForm = ({
-//   formData,
-//   setFormData,
-//   isEditing,
-// }: {
-//   formData: MentorFormData;
-//   setFormData: React.Dispatch<React.SetStateAction<MentorFormData>>;
-//   isEditing: boolean;
-// }) => (
-//   <div className="space-y-4">
-//     <Input
-//       placeholder="Email"
-//       value={formData.userEmail}
-//       onChange={(e) => setFormData({ ...formData, userEmail: e.target.value })}
-//       disabled={isEditing}
-//       className={isEditing ? "cursor-not-allowed bg-gray-100" : ""}
-//     />
-//     <Input
-//       placeholder="Name"
-//       value={formData.name}
-//       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-//     />
-//     <Input
-//       placeholder="Phone"
-//       value={formData.phone}
-//       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-//     />
-//     <Textarea
-//       placeholder="Bio"
-//       value={formData.bio}
-//       onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-//     />
-//     <Input
-//       placeholder="Subjects (comma separated)"
-//       value={formData.subjects.join(", ")}
-//       onChange={(e) =>
-//         setFormData({ ...formData, subjects: e.target.value.split(",").map((s) => s.trim()) })
-//       }
-//     />
-//     <Input
-//       placeholder="Education"
-//       value={formData.education}
-//       onChange={(e) => setFormData({ ...formData, education: e.target.value })}
-//     />
-//     <Input
-//       placeholder="Domain"
-//       value={formData.domain}
-//       onChange={(e) => setFormData({ ...formData, domain: e.target.value })}
-//     />
-//     <Input
-//       placeholder="Expertise (comma separated)"
-//       value={formData.expertise.join(", ")}
-//       onChange={(e) =>
-//         setFormData({ ...formData, expertise: e.target.value.split(",").map((s) => s.trim()) })
-//       }
-//     />
-//   </div>
-// );
-
-const domains = [
-  "JEE Main",
-  "JEE Advanced",
-  "NEET",
-  "BITSAT",
-  "VITEEE",
-  "COMEDK",
-  "KCET",
-  "MHT CET",
-  "WBJEE",
-];
 
 const MentorForm = ({
   formData,
@@ -451,7 +540,10 @@ const MentorForm = ({
       placeholder="Subjects (comma separated)"
       value={formData.subjects.join(", ")}
       onChange={(e) =>
-        setFormData({ ...formData, subjects: e.target.value.split(",").map((s) => s.trim()) })
+        setFormData({
+          ...formData,
+          subjects: e.target.value.split(",").map((s) => s.trim()),
+        })
       }
     />
     <Input
@@ -460,20 +552,41 @@ const MentorForm = ({
       onChange={(e) => setFormData({ ...formData, education: e.target.value })}
     />
 
-    {/* Domain Dropdown */}
+    {/* Main Category */}
+    <Select
+      value={formData.mainCategory}
+      onValueChange={(value) =>
+        setFormData({ ...formData, mainCategory: value, domain: "" })
+      }
+    >
+      <SelectTrigger>
+        <SelectValue placeholder="Select Category" />
+      </SelectTrigger>
+      <SelectContent>
+        {Object.keys(mentorshipCategories).map((cat) => (
+          <SelectItem key={cat} value={cat}>
+            {cat}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+
+    {/* Subcategory */}
     <Select
       value={formData.domain}
       onValueChange={(value) => setFormData({ ...formData, domain: value })}
+      disabled={!formData.mainCategory}
     >
       <SelectTrigger>
-        <SelectValue placeholder="Select Domain" />
+        <SelectValue placeholder="Select Subcategory" />
       </SelectTrigger>
       <SelectContent>
-        {domains.map((domain) => (
-          <SelectItem key={domain} value={domain}>
-            {domain}
-          </SelectItem>
-        ))}
+        {formData.mainCategory &&
+          mentorshipCategories[formData.mainCategory].map((sub) => (
+            <SelectItem key={sub} value={sub}>
+              {sub}
+            </SelectItem>
+          ))}
       </SelectContent>
     </Select>
 
@@ -481,7 +594,10 @@ const MentorForm = ({
       placeholder="Expertise (comma separated)"
       value={formData.expertise.join(", ")}
       onChange={(e) =>
-        setFormData({ ...formData, expertise: e.target.value.split(",").map((s) => s.trim()) })
+        setFormData({
+          ...formData,
+          expertise: e.target.value.split(",").map((s) => s.trim()),
+        })
       }
     />
   </div>

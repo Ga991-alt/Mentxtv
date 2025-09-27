@@ -192,7 +192,8 @@ export default function SubscribePage() {
 
             {/* Price */}
             <p className="text-3xl font-bold text-gray-800 mb-6">
-              {"₹"}{plan.price}
+              {"₹"}
+              {plan.price}
             </p>
 
             {/* Features */}
@@ -201,9 +202,7 @@ export default function SubscribePage() {
                 <li
                   key={i}
                   className={`flex items-center gap-2 text-sm font-medium ${
-                    f.available
-                      ? "text-gray-700"
-                      : "text-gray-400 line-through"
+                    f.available ? "text-gray-700" : "text-gray-400 line-through"
                   }`}
                 >
                   {f.available ? (
