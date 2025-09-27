@@ -277,6 +277,7 @@ import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import AdvertisementBanner from "@/components/AdvertisementBanner";
 
 const mentorshipCategories = {
   "School & Academic": [
@@ -449,6 +450,7 @@ const BookingSessions = () => {
                 {selectedSubCategory !== "All" ? ` for ${selectedSubCategory}` : selectedMainCategory !== "All" ? ` in ${selectedMainCategory}` : ""}
               </p>
             </div>
+            <AdvertisementBanner />
             <div className="flex flex-wrap gap-4 items-center mb-4">
               <span className="font-semibold text-gray-700">Filter Options:</span>
               <div className="w-64">
