@@ -7,7 +7,7 @@ interface AdvertisementBannerProps {
 }
 
 const AdvertisementBanner = ({ 
-  imageUrl = "/asserts/advertisement-banner.jpg", 
+  imageUrl = "/asserts/mentorship-banner.jpg", 
   redirectUrl = "/mentors",
   altText = "Advertisement Banner"
 }: AdvertisementBannerProps) => {
@@ -18,17 +18,16 @@ const AdvertisementBanner = ({
   };
 
   return (
-    <div className="w-full mb-8">
+    <div className="w-full mb-5 px-4 sm:px-6 lg:px-8">
       <div 
-        className="relative w-full h-32 md:h-40 lg:h-48 cursor-pointer overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300"
+        className="relative w-full cursor-pointer overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300"
         onClick={handleBannerClick}
       >
         <img 
           src={imageUrl} 
           alt={altText}
-          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+          className="w-full h-auto object-contain rounded-xl"
         />
-        <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-all duration-300" />
       </div>
     </div>
   );

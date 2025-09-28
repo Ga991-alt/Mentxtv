@@ -56,6 +56,7 @@ import SubscriptionDetail from "./components/admin/SubscriptionDetail";
 import MySubscribers from "./pages/MySubscribers";
 import SubscribePlans from "./pages/SubscribePlans";
 import PaymentPage from "./pages/demopayment";
+import ManageSubscriptionPlans from "./pages/handleSubscription";
 
 const queryClient = new QueryClient();
 
@@ -86,7 +87,7 @@ const App = () => (
             <Route path="/terms" element={<TermsAndConditions />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/appointments/:mentorId" element={<Appointments />} />
-
+            <Route path="/handle-subscription/:mentorId" element={<ManageSubscriptionPlans />} />
             {/* Dashboards */}
             <Route path="/student-dashboard" element={<StudentDashboard />} />
             <Route
