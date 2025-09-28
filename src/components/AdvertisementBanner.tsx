@@ -7,7 +7,7 @@ interface AdvertisementBannerProps {
 }
 
 const AdvertisementBanner = ({ 
-  imageUrl = "/assets/advertisement-banner.jpg", 
+  imageUrl = "asserts/advertisement-banner.jpg", 
   redirectUrl = "/mentors",
   altText = "Advertisement Banner"
 }: AdvertisementBannerProps) => {
@@ -18,7 +18,7 @@ const AdvertisementBanner = ({
   };
 
   return (
-    <div className="w-full mb-8">
+    <div className="w-[90%] my-4 mx-auto">
       <div 
         className="relative w-full h-32 md:h-40 lg:h-48 cursor-pointer overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300"
         onClick={handleBannerClick}

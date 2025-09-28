@@ -440,51 +440,73 @@ const BookingSessions = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navigation />
+      <AdvertisementBanner />
       <main className="mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-6">
         <section className="flex-1">
-          <div className="flex justify-between">
-            <div>
-              <h1 className="text-xl sm:text-2xl font-bold mb-4">Book Your Sessions</h1>
-              <p className="text-sm text-gray-600 mb-4">
-                Showing {filteredGroupSessions.length} of {groupSessions.length} group sessions
-                {selectedSubCategory !== "All" ? ` for ${selectedSubCategory}` : selectedMainCategory !== "All" ? ` in ${selectedMainCategory}` : ""}
-              </p>
-            </div>
-            <AdvertisementBanner />
-            <div className="flex flex-wrap gap-4 items-center mb-4">
-              <span className="font-semibold text-gray-700">Filter Options:</span>
-              <div className="w-64">
-                <Select value={selectedMainCategory} onValueChange={(val) => {
-                  setSelectedMainCategory(val);
-                  setSelectedSubCategory("All");
-                }}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Main Category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="All">All Categories</SelectItem>
-                    {Object.keys(mentorshipCategories).map((main) => (
-                      <SelectItem key={main} value={main}>{main}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="w-64">
-                <Select value={selectedSubCategory} onValueChange={setSelectedSubCategory}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Subcategory" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="All">All</SelectItem>
-                    {selectedMainCategory !== "All" &&
-                      mentorshipCategories[selectedMainCategory].map((sub) => (
-                        <SelectItem key={sub} value={sub}>{sub}</SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
+          <div className="flex flex-col lg:flex-row lg:justify-between gap-6">
+  {/* Left section */}
+  <div>
+    <h1 className="text-lg sm:text-xl md:text-2xl font-bold mb-4 sm:mb-4">
+      Book Your Sessions
+    </h1>
+    <p className="text-xs sm:text-sm text-gray-600">
+      Showing {filteredGroupSessions.length} of {groupSessions.length} group sessions
+      {selectedSubCategory !== "All"
+        ? ` for ${selectedSubCategory}`
+        : selectedMainCategory !== "All"
+        ? ` in ${selectedMainCategory}`
+        : ""}
+    </p>
+  </div>
+
+  {/* Right filters */}
+  <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3">
+    <span className="font-semibold text-gray-700">Filter Options:</span>
+    
+    <div className="w-full sm:w-48">
+      <Select
+        value={selectedMainCategory}
+        onValueChange={(val) => {
+          setSelectedMainCategory(val);
+          setSelectedSubCategory("All");
+        }}
+      >
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder="Main Category" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="All">All Categories</SelectItem>
+          {Object.keys(mentorshipCategories).map((main) => (
+            <SelectItem key={main} value={main}>
+              {main}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+
+    <div className="w-full sm:w-48">
+      <Select
+        value={selectedSubCategory}
+        onValueChange={setSelectedSubCategory}
+      >
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder="Subcategory" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="All">All</SelectItem>
+          {selectedMainCategory !== "All" &&
+            mentorshipCategories[selectedMainCategory].map((sub) => (
+              <SelectItem key={sub} value={sub}>
+                {sub}
+              </SelectItem>
+            ))}
+        </SelectContent>
+      </Select>
+    </div>
+  </div>
+</div>
+
 
           <Tabs defaultValue="group" className="w-full">
             <TabsContent value="group">

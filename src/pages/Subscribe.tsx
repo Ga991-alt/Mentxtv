@@ -98,54 +98,108 @@
 import { Check, X } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useUser } from "@/contexts/UserContext";
+import { useEffect, useState } from "react";
 
+interface Feature {
+  text: string;
+  available: boolean;
+}
+interface Plan {
+  id: string;
+  title: string;
+  price: number;
+  months: number;
+  color: string;
+  features: Feature[];
+}
 export default function SubscribePage() {
   const { mentorId } = useParams<{ mentorId: string }>();
   console.log("Mentor ID from URL:", mentorId);
   const { user } = useUser();
   const navigate = useNavigate();
+  const [plans, setPlans] = useState<Plan[]>([]);
+  // const plans = [
+  //   {
+  //     id: 1,
+  //     title: "1 Month",
+  //     price: 3000,
+  //     months: 1,
+  //     color: "bg-blue-500",
+  //     features: [
+  //       { text: "One-to-One Mentor Session", available: true },
+  //       { text: "Personal Examination", available: true },
+  //       { text: "Community Access", available: true },
+  //       { text: "Progress Tracking", available: false },
+  //     ],
+  //   },
+  //   {
+  //     id: 2,
+  //     title: "3 Months",
+  //     price: 7000,
+  //     months: 3,
+  //     color: "bg-yellow-500",
+  //     features: [
+  //       { text: "One-to-One Mentor Session", available: true },
+  //       { text: "Personal Examination", available: true },
+  //       { text: "Community Access", available: true },
+  //       { text: "Progress Tracking", available: true },
+  //     ],
+  //   },
+  //   {
+  //     id: 3,
+  //     title: "6 Months",
+  //     price: 12000,
+  //     months: 6,
+  //     color: "bg-green-500",
+  //     features: [
+  //       { text: "One-to-One Mentor Session", available: true },
+  //       { text: "Personal Examination", available: true },
+  //       { text: "Community Access", available: true },
+  //       { text: "Progress Tracking", available: true },
+  //     ],
+  //   },
+  // ];
 
-  const plans = [
-    {
-      id: 1,
-      title: "1 Month",
-      price: 3000,
-      months: 1,
-      color: "bg-blue-500",
-      features: [
-        { text: "One-to-One Mentor Session", available: true },
-        { text: "Personal Examination", available: true },
-        { text: "Community Access", available: true },
-        { text: "Progress Tracking", available: false },
-      ],
-    },
-    {
-      id: 2,
-      title: "3 Months",
-      price: 7000,
-      months: 3,
-      color: "bg-yellow-500",
-      features: [
-        { text: "One-to-One Mentor Session", available: true },
-        { text: "Personal Examination", available: true },
-        { text: "Community Access", available: true },
-        { text: "Progress Tracking", available: true },
-      ],
-    },
-    {
-      id: 3,
-      title: "6 Months",
-      price: 12000,
-      months: 6,
-      color: "bg-green-500",
-      features: [
-        { text: "One-to-One Mentor Session", available: true },
-        { text: "Personal Examination", available: true },
-        { text: "Community Access", available: true },
-        { text: "Progress Tracking", available: true },
-      ],
-    },
-  ];
+   useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const res = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/api/subscription-plans/mentor/${mentorId}`
+        );
+        if (!res.ok) throw new Error("Failed to fetch plans");
+
+        const data = await res.json();
+        const apiPlans = data?.data || [];
+        console.log("Fetched Plans from API:", apiPlans);
+
+        // Map API response to your front-end format
+        const mappedPlans: Plan[] = apiPlans.map((plan: any, index: number) => ({
+          id: plan._id,
+          title: plan.planTitle,
+          price: plan.price,
+          months: plan.duration,
+          color:
+            index === 0
+              ? "bg-blue-500"
+              : index === 1
+              ? "bg-yellow-500"
+              : index === 2
+              ? "bg-green-500"
+              : "bg-purple-500", // fallback for extra plans
+          features: (plan.features || []).map((feat: string) => ({
+            text: feat,
+            available: true, // you can adjust this if API provides availability
+          })),
+        }));
+
+        setPlans(mappedPlans);
+      } catch (err) {
+        console.error("Error fetching mentor plans", err);
+      }
+    };
+
+    if (mentorId) fetchPlans();
+  }, [mentorId]);
 
   const handleSubscribe = (plan: any) => {
     if (!user?.id) {
