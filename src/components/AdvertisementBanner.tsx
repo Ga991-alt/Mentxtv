@@ -7,7 +7,7 @@ interface AdvertisementBannerProps {
 }
 
 const AdvertisementBanner = ({ 
-  imageUrl = "/assets/advertisement-banner.jpg", 
+  imageUrl = "/asserts/advertisement-banner.jpg", 
   redirectUrl = "/mentors",
   altText = "Advertisement Banner"
 }: AdvertisementBannerProps) => {
