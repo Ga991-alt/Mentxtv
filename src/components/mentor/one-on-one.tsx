@@ -123,6 +123,12 @@ export default function OneToOneSessions() {
         ) : (
           <>
             <Button
+            onClick={() =>
+                              window.open(
+                                `/live-session/${session._id}`,
+                                "_blank"
+                              )
+                            }
               size="sm"
               className="rounded-full flex gap-1 bg-blue-500 text-white hover:bg-blue-600"
             >

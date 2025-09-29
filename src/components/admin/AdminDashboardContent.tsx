@@ -389,7 +389,7 @@
 
 
 
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import DashboardStats from "@/components/admin/DashboardStats";
 import MentorManagement from "@/components/admin/MentorManagement";
 import StudentManagement from "@/components/admin/StudentManagement";
@@ -405,6 +405,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import SubscriptionManagement from "./SubscriptionManagement";
 import FeedbackManagement from "./FeedbackManagement";
+import { useUser } from "@/contexts/UserContext";
 
 interface Payment {
   id: string;
@@ -567,6 +568,9 @@ const [educationNews, setEducationNews] = useState<EducationNews[]>([]);
 //   fetchStats();
 // }, []);
 
+
+ 
+
 const fetchEducationNews = async () => {
   try {
     const API_KEY = import.meta.env.VITE_NEWSAPI_KEY;
@@ -670,6 +674,16 @@ useEffect(() => {
 //     setEducationNews(mockNews);
 //   }, []);
  
+const { user, loading } = useUser(); 
+const navigate = useNavigate();
+
+useEffect(() => {
+  console.log("user is ", user);
+
+  if (!loading && (!user || user.role !== "Admin")) {
+    navigate("/admin-login");
+  }
+}, [user, loading, navigate]); 
 
 
 useEffect(() => {

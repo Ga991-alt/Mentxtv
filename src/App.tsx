@@ -57,6 +57,7 @@ import MySubscribers from "./pages/MySubscribers";
 import SubscribePlans from "./pages/SubscribePlans";
 import PaymentPage from "./pages/demopayment";
 import ManageSubscriptionPlans from "./pages/handleSubscription";
+import AdminForgotPassword from "./pages/adminForgotpassword";
 
 const queryClient = new QueryClient();
 
@@ -131,7 +132,7 @@ const App = () => (
             {/* Feedback */}
             <Route path="/feedback/:sessionid" element={<FeedbackForm />} />
             <Route path="/demopayment" element={<PaymentPage />} />
-
+            <Route path="/admin-forgot-password" element={<AdminForgotPassword/>}/>
             {/* Auth */}
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />

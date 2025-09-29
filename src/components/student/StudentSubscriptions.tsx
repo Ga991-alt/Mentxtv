@@ -231,6 +231,15 @@ const StudentSubscriptions = ({ userId }: { userId: string }) => {
     console.log("Found appointment:", app);
     return app.status;
   };
+  const getSessionId = (mentorId: string) => {
+    console.log("Checking session status for mentorId:", mentorId, appointments);
+    const app = appointments.find((a) => a.mentorId._id === mentorId);
+    if (!app) return "none";
+    console.log("Found appointment:", app);
+    return app._id;
+  };
+
+
 
   if (loading) return <p>Loading subscriptions...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
@@ -258,7 +267,7 @@ const StudentSubscriptions = ({ userId }: { userId: string }) => {
           {subscriptions.map((subscription) => {
             const mentor = subscription.mentorId;
             const sessionStatus = getSessionStatus(mentor._id);
-
+            const sessionId = getSessionId(mentor._id);
             const renderSessionButton = () => {
               switch (sessionStatus) {
                 case "pending":
@@ -273,7 +282,12 @@ const StudentSubscriptions = ({ userId }: { userId: string }) => {
                       variant="default"
                       size="sm"
                       className="flex-1 text-xs flex items-center justify-center gap-1"
-                      onClick={() => navigate(`/student-sessions/${mentor._id}`)}
+                      onClick={() =>
+                              window.open(
+                                `/live-session/${sessionId}`,
+                                "_blank"
+                              )
+                            }
                     >
                       <Video size={14} /> Join
                     </Button>

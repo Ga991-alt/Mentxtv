@@ -515,7 +515,7 @@ const MentorDashboard = () => {
                             className="bg-red-600 hover:bg-red-700 text-white mr-2"
                             onClick={() =>
                               window.open(
-                                `/mentor-live-session/${session._id}`,
+                                `/live-session/${session._id}`,
                                 "_blank"
                               )
                             }
